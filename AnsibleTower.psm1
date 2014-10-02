@@ -12,11 +12,7 @@ $ClassPath = Join-Path $PSScriptRoot "AnsibleTower (c# project)\AnsibleTower\Ans
 $Code = Get-Content -Path $ClassPath -Raw
 #$Code2 = Get-Content -Path $ClassPath2 -Raw
 
-if (!(get-type -type "AnsibleTower.Organization" -ErrorAction 0))
-{
-    add-type -TypeDefinition $Code -ReferencedAssemblies $NewtonSoftJsonPath
-}
-
+add-type -TypeDefinition $Code -ReferencedAssemblies $NewtonSoftJsonPath
 
 #Load the json parsers to have it handy whenever.
 $JsonParsers = New-Object AnsibleTower.JsonParsers
@@ -25,6 +21,11 @@ $JsonParsers = New-Object AnsibleTower.JsonParsers
 Function Get-AnsibleInternalJsonResult
 {
     Param ($AnsibleUrl=$AnsibleUrl,[System.Management.Automation.PSCredential]$Credential=$AnsibleCredential,$ItemType,$Id)
+
+    if ((!$AnsibleUrl) -or (!$Credential))
+    {
+        throw "You need to connect first, use Connect-AnsibleTower"
+    }
     $Result = Invoke-RestMethod -Uri ($AnsibleUrl + "/api/v1/") -Credential $Credential
     $ItemApiUrl = $result.$ItemType
     if ($id)
