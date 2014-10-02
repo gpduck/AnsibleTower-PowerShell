@@ -18,7 +18,10 @@ add-type -TypeDefinition $Code -ReferencedAssemblies $NewtonSoftJsonPath
 $JsonParsers = New-Object AnsibleTower.JsonParsers
 
 
-Function Get-AnsibleInternalJsonResult
+#Dot-source/Load the other powershell scripts
+Get-ChildItem "*.ps1" -path $PSScriptRoot | ForEach-Object { . $_.FullName }
+
+Function Invoke-GetAnsibleInternalJsonResult
 {
     Param ($AnsibleUrl=$AnsibleUrl,[System.Management.Automation.PSCredential]$Credential=$AnsibleCredential,$ItemType,$Id)
 
@@ -33,13 +36,33 @@ Function Get-AnsibleInternalJsonResult
         $ItemApiUrl += "$id/"
     }
 
-    $InvokeResult = @()
-    $invokeresult += Invoke-RestMethod -Uri ($ansibleurl + $ItemApiUrl) -Credential $Credential 
+    
+    $invokeresult = Invoke-RestMethod -Uri ($ansibleurl + $ItemApiUrl) -Credential $Credential 
 
-    if ($InvokeResult.count -gt 0)
+    if ($InvokeResult.id)
     {
         return $InvokeResult
     }
+    Elseif ($InvokeResult.results)
+    {
+        return $InvokeResult.results
+    }
+
+}
+
+Function Invoke-PostAnsibleInternalJsonResult
+{
+    Param ($AnsibleUrl=$AnsibleUrl,[System.Management.Automation.PSCredential]$Credential=$AnsibleCredential,$ItemType,$InputObject)
+
+    if ((!$AnsibleUrl) -or (!$Credential))
+    {
+        throw "You need to connect first, use Connect-AnsibleTower"
+    }
+    $Result = Invoke-RestMethod -Uri ($AnsibleUrl + "/api/v1/") -Credential $Credential
+    $ItemApiUrl = $result.$ItemType
+    
+    $invokeresult += Invoke-RestMethod -Uri ($ansibleurl + $ItemApiUrl) -Credential $Credential -Method Post -Body ($InputObject | ConvertTo-Json -Depth 99) -ContentType "application/json"
+    $invokeresult
 
 }
 
@@ -119,31 +142,4 @@ Function Connect-AnsibleTower
 
 }
 
-
-function Get-AnsibleOrganization
-{
-    Param (
-        [String]$Name,
-        [int]$id
-    )
-
-    $Return = Get-AnsibleInternalJsonResult -ItemType "organizations" -Id $id
-
-    if (!($Return))
-    {
-        #Nothing returned from the call
-        Return
-    }
-    $returnobj = @()
-    foreach ($jsonorg in $return.results)
-    {
-        #Shift back to json and let newtonsoft parse it to a strongly named object instead
-        $jsonorgstring = $jsonorg | ConvertTo-Json
-        $org = $JsonParsers.ParseToOrganization($jsonorgstring)
-        $returnobj += $org; $org = $null
-
-    }
-    #return the things
-    $returnobj
-}
 
