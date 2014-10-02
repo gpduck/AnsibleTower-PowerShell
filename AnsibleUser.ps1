@@ -68,3 +68,42 @@ Function New-AnsibleUser
     }
     
 }
+
+Function Set-AnsibleUser
+{
+    [CmdletBinding()]
+    Param (
+        [Parameter(ValueFromPipelineByPropertyName=$true,Mandatory=$true)]
+        $id,
+        #[Parameter(Mandatory=$true)]
+        $UserName,
+        #[Parameter(Mandatory=$true)] 
+        $FirstName, 
+        #[Parameter(Mandatory=$true)]
+        $LastName, 
+        #[Parameter(Mandatory=$true)]
+        $Email, 
+        #[Parameter(Mandatory=$true)]
+        [bool]$SuperUser, 
+        #[Parameter(Mandatory=$true)]
+        $Password
+    )
+
+    $thisuser = Get-AnsibleUser -id $id
+
+    if ($username) {$thisuser.username = $UserName}
+    if ($FirstName){$thisuser.first_name = $FirstName}
+    if ($LastName){$thisuser.last_name = $LastName}
+    if ($Email){$thisuser.email = $Email}
+    if ($SuperUser) {$thisuser.is_superuser = $SuperUser}
+    if ($Password) {$thisuser.password = $Password}
+    
+    $result = Invoke-PutAnsibleInternalJsonResult -ItemType "users" -InputObject $thisuser
+    if ($result)
+    {
+        $resultString = $result | ConvertTo-Json
+        $resultobj = $JsonParsers.ParseToUser($resultString)
+        $resultobj
+    }
+    
+}
