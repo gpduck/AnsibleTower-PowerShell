@@ -127,7 +127,7 @@ Function Connect-AnsibleTower
     }
     Catch
     {
-    
+        throw "Could not authenticate"
     }
     
     #Code for error-handling goes here
