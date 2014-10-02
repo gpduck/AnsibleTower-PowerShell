@@ -15,7 +15,7 @@ $Code = Get-Content -Path $ClassPath -Raw
 add-type -TypeDefinition $Code -ReferencedAssemblies $NewtonSoftJsonPath
 
 #Load the json parsers to have it handy whenever.
-$JsonParsers = New-Object AnsibleTower.JsonParsers
+$JsonParsers = New-Object AnsibleTower.JsonFunctions
 
 
 #Dot-source/Load the other powershell scripts
@@ -62,6 +62,31 @@ Function Invoke-PostAnsibleInternalJsonResult
     $ItemApiUrl = $result.$ItemType
     
     $invokeresult += Invoke-RestMethod -Uri ($ansibleurl + $ItemApiUrl) -Credential $Credential -Method Post -Body ($InputObject | ConvertTo-Json -Depth 99) -ContentType "application/json"
+    $invokeresult
+
+}
+
+Function Invoke-PutAnsibleInternalJsonResult
+{
+    Param ($AnsibleUrl=$AnsibleUrl,[System.Management.Automation.PSCredential]$Credential=$AnsibleCredential,$ItemType,$InputObject)
+
+    if ((!$AnsibleUrl) -or (!$Credential))
+    {
+        throw "You need to connect first, use Connect-AnsibleTower"
+    }
+    $Result = Invoke-RestMethod -Uri ($AnsibleUrl + "/api/v1/") -Credential $Credential
+    $ItemApiUrl = $result.$ItemType
+    if (!($id))
+    {
+        Write-Error "I couldnt find the id of that object"
+        return
+    }
+    $id = $InputObject.id
+
+    $ItemApiUrl += "$id/"
+    
+
+    $invokeresult += Invoke-RestMethod -Uri ($ansibleurl + $ItemApiUrl) -Credential $Credential -Method Put -Body ($InputObject | ConvertTo-Json -Depth 99) -ContentType "application/json"
     $invokeresult
 
 }
