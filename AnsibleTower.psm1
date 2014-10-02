@@ -15,7 +15,7 @@ $Code = Get-Content -Path $ClassPath -Raw
 add-type -TypeDefinition $Code -ReferencedAssemblies $NewtonSoftJsonPath
 
 #Load the json parsers to have it handy whenever.
-$JsonParsers = New-Object AnsibleTower.JsonParsers
+$JsonParsers = New-Object AnsibleTower.JsonFunctions
 
 
 #Dot-source/Load the other powershell scripts
