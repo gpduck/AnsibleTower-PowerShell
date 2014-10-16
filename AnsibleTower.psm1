@@ -52,7 +52,13 @@ Function Invoke-GetAnsibleInternalJsonResult
 
 Function Invoke-PostAnsibleInternalJsonResult
 {
-    Param ($AnsibleUrl=$AnsibleUrl,[System.Management.Automation.PSCredential]$Credential=$AnsibleCredential,$ItemType,$InputObject)
+    Param (
+        $AnsibleUrl=$AnsibleUrl,
+        [System.Management.Automation.PSCredential]$Credential=$AnsibleCredential,
+        $ItemType,
+        $itemId,
+        $ItemSubItem,
+        $InputObject)
 
     if ((!$AnsibleUrl) -or (!$Credential))
     {
@@ -61,7 +67,27 @@ Function Invoke-PostAnsibleInternalJsonResult
     $Result = Invoke-RestMethod -Uri ($AnsibleUrl + "/api/v1/") -Credential $Credential
     $ItemApiUrl = $result.$ItemType
     
-    $invokeresult += Invoke-RestMethod -Uri ($ansibleurl + $ItemApiUrl) -Credential $Credential -Method Post -Body ($InputObject | ConvertTo-Json -Depth 99) -ContentType "application/json"
+    if ($itemId)
+    {
+        $ItemApiUrl = $ItemApiUrl + "$itemId"
+    }
+
+    if ($ItemSubItem)
+    {
+        $ItemApiUrl = $ItemApiUrl + "/$ItemSubItem/"
+    }
+    $Params = @{
+        "uri"=($ansibleurl + $ItemApiUrl);
+        "Credential"=$Credential;
+        }
+    if ($InputObject)
+    {
+        $params.Add("Body",($InputObject | ConvertTo-Json -Depth 99))
+    }
+    
+    Write-Debug "Credentials are: $($credential.UserName)"
+    Write-Debug "Invoking call with params: $($params.Keys)"
+    $invokeresult += Invoke-RestMethod -Method Post -ContentType "application/json" @params
     $invokeresult
 
 }

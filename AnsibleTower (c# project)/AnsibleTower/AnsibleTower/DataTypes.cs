@@ -66,6 +66,47 @@ namespace AnsibleTower
     }
 
 
+    public class JobTemplate
+    {
+        public int id { get; set; }
+        public string name { get; set; }
+        public string description { get; set; }
+        public string job_type { get; set; }
+        public object inventory { get; set; }
+        public object project { get; set; }
+        public string playbook { get; set; }
+        public object credential { get; set; }
+        public object cloud_credential { get; set; }
+        public int forks { get; set; }
+        public string limit { get; set; }
+        public int verbosity { get; set; }
+        public string extra_vars { get; set; }
+        public string job_tags { get; set; }
+        public string host_config_key { get; set; }
+        public bool ask_variables_on_launch { get; set; }
+    }
+
+    public class Job
+    {
+        public int id { get; set; }
+        public string name { get; set; }
+        public string description { get; set; }
+        public object unified_job_template { get; set; }
+        public string job_type { get; set; }
+        public object inventory { get; set; }
+        public object project { get; set; }
+        public string playbook { get; set; }
+        public object credential { get; set; }
+        public object cloud_credential { get; set; }
+        public int forks { get; set; }
+        public string limit { get; set; }
+        public int verbosity { get; set; }
+        public string extra_vars { get; set; }
+        public string job_tags { get; set; }
+        public object job_template { get; set; }
+    }
+
+
 
     public class JsonFunctions
     {
@@ -78,6 +119,18 @@ namespace AnsibleTower
         public AnsibleTower.User ParseToUser(string JsonString)
         {
             AnsibleTower.User ConvertedObject = JsonConvert.DeserializeObject<AnsibleTower.User>(JsonString);
+            return ConvertedObject;
+        }
+
+        public AnsibleTower.JobTemplate ParseToJobTemplate(string JsonString)
+        {
+            AnsibleTower.JobTemplate ConvertedObject = JsonConvert.DeserializeObject<AnsibleTower.JobTemplate>(JsonString);
+            return ConvertedObject;
+        }
+
+        public AnsibleTower.Job ParseToJob(string JsonString)
+        {
+            AnsibleTower.Job ConvertedObject = JsonConvert.DeserializeObject<AnsibleTower.Job>(JsonString);
             return ConvertedObject;
         }
     
