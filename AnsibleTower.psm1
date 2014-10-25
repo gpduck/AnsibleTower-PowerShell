@@ -3,7 +3,7 @@ $AnsibleCredential = $null
 
 
 #Load Json
-$NewtonSoftJsonPath = join-path $PSScriptRoot "AnsibleTower (c# project)\AnsibleTower\AnsibleTower\bin\Debug\Newtonsoft.Json.dll"
+$NewtonSoftJsonPath = join-path $PSScriptRoot "AnsibleTowerClasses\AnsibleTower\AnsibleTower\bin\Debug\Newtonsoft.Json.dll"
 add-type -Path $NewtonSoftJsonPath
 
 #Compile the .net classes
