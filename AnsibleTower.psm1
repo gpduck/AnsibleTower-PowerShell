@@ -7,7 +7,7 @@ $NewtonSoftJsonPath = join-path $PSScriptRoot "AnsibleTowerClasses\AnsibleTower\
 add-type -Path $NewtonSoftJsonPath
 
 #Compile the .net classes
-$ClassPath = Join-Path $PSScriptRoot "AnsibleTower (c# project)\AnsibleTower\AnsibleTower\DataTypes.cs"
+$ClassPath = Join-Path $PSScriptRoot "AnsibleTowerClasses\AnsibleTower\AnsibleTower\DataTypes.cs"
 #$ClassPath2 = Join-Path $PSScriptRoot "AnsibleTower (c# project)\AnsibleTower\AnsibleTower\JsonParsers.cs"
 $Code = Get-Content -Path $ClassPath -Raw
 #$Code2 = Get-Content -Path $ClassPath2 -Raw
