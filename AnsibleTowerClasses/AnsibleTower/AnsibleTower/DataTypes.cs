@@ -104,8 +104,8 @@ namespace AnsibleTower
         public string extra_vars { get; set; }
         public string job_tags { get; set; }
         //public object job_template { get; set; }
-        public DateTime started { get; set; }
-        public DateTime finished { get; set; }
+        public DateTime? started { get; set; }
+        public DateTime? finished { get; set; }
     }
 
     public class Inventory
