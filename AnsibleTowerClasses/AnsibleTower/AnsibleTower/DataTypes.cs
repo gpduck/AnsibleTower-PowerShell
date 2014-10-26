@@ -120,13 +120,13 @@ namespace AnsibleTower
         public int organization { get; set; }
         public string variables { get; set; }
         public bool has_active_failures { get; set; }
-        public int total_hosts { get; set; }
-        public int hosts_with_active_failures { get; set; }
-        public int total_groups { get; set; }
+        public int? total_hosts { get; set; }
+        public int? hosts_with_active_failures { get; set; }
+        public int? total_groups { get; set; }
         public int groups_with_active_failures { get; set; }
         public bool has_inventory_sources { get; set; }
-        public int total_inventory_sources { get; set; }
-        public int inventory_sources_with_failures { get; set; }
+        public int? total_inventory_sources { get; set; }
+        public int? inventory_sources_with_failures { get; set; }
         public List<Group> groups { get; set; }
     }
 
@@ -145,8 +145,8 @@ namespace AnsibleTower
         public string variables { get; set; }
         public bool has_active_failures { get; set; }
         public bool has_inventory_sources { get; set; }
-        public int last_job { get; set; }
-        public int last_job_host_summary { get; set; }
+        public int? last_job { get; set; }
+        public int? last_job_host_summary { get; set; }
         public List<Group> groups { get; set; }
     }
 
