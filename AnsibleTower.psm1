@@ -19,11 +19,15 @@ $JsonParsers = New-Object AnsibleTower.JsonFunctions
 
 
 #Dot-source/Load the other powershell scripts
-Get-ChildItem "*.ps1" -path $PSScriptRoot | ForEach-Object { . $_.FullName }
+Get-ChildItem "*.ps1" -path $PSScriptRoot | where {$_.Name -notmatch "test"} |  ForEach-Object { . $_.FullName }
 
 Function Invoke-GetAnsibleInternalJsonResult
 {
-    Param ($AnsibleUrl=$AnsibleUrl,[System.Management.Automation.PSCredential]$Credential=$AnsibleCredential,$ItemType,$Id)
+    Param ($AnsibleUrl=$AnsibleUrl,
+    [System.Management.Automation.PSCredential]$Credential=$AnsibleCredential,
+    $ItemType,
+    $Id,
+    $ItemSubItem)
 
     if ((!$AnsibleUrl) -or (!$Credential))
     {
@@ -36,7 +40,13 @@ Function Invoke-GetAnsibleInternalJsonResult
         $ItemApiUrl += "$id/"
     }
 
-    
+    if ($ItemSubItem)
+    {
+        $ItemApiUrl = $ItemApiUrl + "/$ItemSubItem/"
+    }
+
+    $ItemApiUrl = $ItemApiUrl.Replace("//","/")
+
     $invokeresult = Invoke-RestMethod -Uri ($ansibleurl + $ItemApiUrl) -Credential $Credential 
 
     if ($InvokeResult.id)
@@ -86,7 +96,7 @@ Function Invoke-PostAnsibleInternalJsonResult
     }
     
     Write-Debug "Credentials are: $($credential.UserName)"
-    Write-Debug "Invoking call with params: $($params.Keys)"
+    Write-Debug "Invoking call with body: $($InputObject | ConvertTo-Json -Depth 99)"
     $invokeresult += Invoke-RestMethod -Method Post -ContentType "application/json" @params
     $invokeresult
 
@@ -94,7 +104,11 @@ Function Invoke-PostAnsibleInternalJsonResult
 
 Function Invoke-PutAnsibleInternalJsonResult
 {
-    Param ($AnsibleUrl=$AnsibleUrl,[System.Management.Automation.PSCredential]$Credential=$AnsibleCredential,$ItemType,$InputObject)
+    Param (
+        $AnsibleUrl=$AnsibleUrl,
+        [System.Management.Automation.PSCredential]$Credential=$AnsibleCredential,
+        $ItemType,$InputObject
+    )
 
     if ((!$AnsibleUrl) -or (!$Credential))
     {

@@ -106,6 +106,69 @@ namespace AnsibleTower
         public object job_template { get; set; }
     }
 
+    public class Inventory
+    {
+        public int id { get; set; }
+        public string type { get; set; }
+        public string url { get; set; }
+        public DateTime created { get; set; }
+        public DateTime modified { get; set; }
+        public string name { get; set; }
+        public string description { get; set; }
+        public int organization { get; set; }
+        public string variables { get; set; }
+        public bool has_active_failures { get; set; }
+        public int total_hosts { get; set; }
+        public int hosts_with_active_failures { get; set; }
+        public int total_groups { get; set; }
+        public int groups_with_active_failures { get; set; }
+        public bool has_inventory_sources { get; set; }
+        public int total_inventory_sources { get; set; }
+        public int inventory_sources_with_failures { get; set; }
+        public List<Group> groups { get; set; }
+    }
+
+    public class Host
+    {
+        public int id { get; set; }
+        public string type { get; set; }
+        public string url { get; set; }
+        public DateTime created { get; set; }
+        public DateTime modified { get; set; }
+        public string name { get; set; }
+        public string description { get; set; }
+        public int inventory { get; set; }
+        public bool enabled { get; set; }
+        public string instance_id { get; set; }
+        public string variables { get; set; }
+        public bool has_active_failures { get; set; }
+        public bool has_inventory_sources { get; set; }
+        public int last_job { get; set; }
+        public int last_job_host_summary { get; set; }
+        public List<Group> groups { get; set; }
+    }
+
+
+    public class Group
+    {
+        public int id { get; set; }
+        public string type { get; set; }
+        public string url { get; set; }
+        public string created { get; set; }
+        public DateTime modified { get; set; }
+        public string name { get; set; }
+        public string description { get; set; }
+        public int inventory { get; set; }
+        public string variables { get; set; }
+        public bool has_active_failures { get; set; }
+        public int total_hosts { get; set; }
+        public int hosts_with_active_failures { get; set; }
+        public int total_groups { get; set; }
+        public int groups_with_active_failures { get; set; }
+        public bool has_inventory_sources { get; set; }
+    }
+
+
 
 
     public class JsonFunctions
@@ -131,6 +194,24 @@ namespace AnsibleTower
         public AnsibleTower.Job ParseToJob(string JsonString)
         {
             AnsibleTower.Job ConvertedObject = JsonConvert.DeserializeObject<AnsibleTower.Job>(JsonString);
+            return ConvertedObject;
+        }
+
+        public AnsibleTower.Inventory ParseToInventory(string JsonString)
+        {
+            AnsibleTower.Inventory ConvertedObject = JsonConvert.DeserializeObject<AnsibleTower.Inventory>(JsonString);
+            return ConvertedObject;
+        }
+
+        public AnsibleTower.Host ParseToHost(string JsonString)
+        {
+            AnsibleTower.Host ConvertedObject = JsonConvert.DeserializeObject<AnsibleTower.Host>(JsonString);
+            return ConvertedObject;
+        }
+
+        public AnsibleTower.Group ParseToGroup(string JsonString)
+        {
+            AnsibleTower.Group ConvertedObject = JsonConvert.DeserializeObject<AnsibleTower.Group>(JsonString);
             return ConvertedObject;
         }
     
