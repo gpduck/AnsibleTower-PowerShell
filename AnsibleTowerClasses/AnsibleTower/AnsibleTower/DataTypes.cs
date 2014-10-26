@@ -91,19 +91,21 @@ namespace AnsibleTower
         public int id { get; set; }
         public string name { get; set; }
         public string description { get; set; }
-        public object unified_job_template { get; set; }
+        //public object unified_job_template { get; set; }
         public string job_type { get; set; }
         public object inventory { get; set; }
         public object project { get; set; }
         public string playbook { get; set; }
-        public object credential { get; set; }
-        public object cloud_credential { get; set; }
+        //public object credential { get; set; }
+        //public object cloud_credential { get; set; }
         public int forks { get; set; }
         public string limit { get; set; }
         public int verbosity { get; set; }
         public string extra_vars { get; set; }
         public string job_tags { get; set; }
-        public object job_template { get; set; }
+        //public object job_template { get; set; }
+        public DateTime started { get; set; }
+        public DateTime finished { get; set; }
     }
 
     public class Inventory

@@ -1,7 +1,7 @@
 function Get-AnsibleHost
 {
     [CmdletBinding()]
-    [OutputType([Ansible.host])]
+    [OutputType([AnsibleTower.Host])]
     Param (
         [Parameter(ValueFromPipelineByPropertyName=$true)]
         [int]$id, 
