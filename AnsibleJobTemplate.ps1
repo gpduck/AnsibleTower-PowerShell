@@ -1,5 +1,11 @@
 function Get-AnsibleJobTemplate
 {
+    <#
+        .SYNOPSIS
+
+        Gets one or multiple Job Templates
+
+    #>
     [CmdletBinding()]
     Param (
         [Parameter(ValueFromPipelineByPropertyName=$true)]
@@ -37,6 +43,19 @@ function Get-AnsibleJobTemplate
 
 function Invoke-AnsibleJobTemplate
 {
+    <#
+        .SYNOPSIS
+
+        Invokes an Ansible Job Template
+
+        .EXAMPLE
+
+        Connect-AnsibleTower -Credential (get-credential) -TowerUrl "https://mytower" -DisableCertificateVerification
+        $jobtemplate = get-ansibleJobTemplate -id 5
+        $jobtemplate | Invoke-AnsibleJobTemplate
+
+    #>
+
     [CmdletBinding()]
     Param (
         [Parameter(ValueFromPipelineByPropertyName=$true,Mandatory=$true)]
