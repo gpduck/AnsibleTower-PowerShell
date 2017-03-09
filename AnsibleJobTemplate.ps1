@@ -20,6 +20,7 @@ function Get-AnsibleJobTemplateID
         [string]$Name
     )
 
+	# We should be passing a search term here, prevents from passing all jobs via the REST call.
     (Get-AnsibleJobTemplate | ? { $_.name -eq $Name }).id
 }
 
@@ -99,6 +100,16 @@ function Invoke-AnsibleJobTemplate
     .SYNOPSIS
     Runs an Ansible job template.
 
+	.PARAMETER Name
+	Name of the Ansible job template.
+
+	.PARAMETER ID
+	ID of the Ansible job template.
+
+	.PARAMETER Data
+	Any additional data to be supplied to Tower in order to run the job template. Most common is "extra_vars".
+	Supply a normal Powershell hash table. It will be converted to JSON. See the examples for more information.
+
     .EXAMPLE
     Invoke-AnsibleJobTemplate -Name 'Demo Job Template'
 
@@ -108,6 +119,17 @@ function Invoke-AnsibleJobTemplate
     $job = Invoke-AnsibleJobTemplate -ID 5
 
     Runs a job for job template with ID 5.
+
+    .EXAMPLE
+    $jobTemplateData = @{
+        "extra_vars" = @{
+            'var1' = 'value1';
+            'var2' = 'value2';
+        };
+    }
+    $job = Invoke-AnsibleJobTemplate -Name 'My Ansible Job Template' -Data $jobTemplateData
+
+    Launches job template named 'My Ansible Job Template' and passes extra variables for the job to run with.
 
     .OUTPUTS
     Strongly typed job object.
@@ -119,7 +141,9 @@ function Invoke-AnsibleJobTemplate
         [string]$Name,
 
         [Parameter(Mandatory=$true,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true,Position=0,ParameterSetName='ID')]
-        [int]$ID
+        [int]$ID,
+
+		[Object]$Data
     )
 
     if ($Name) {
@@ -129,7 +153,15 @@ function Invoke-AnsibleJobTemplate
         }
     }
 
-    $result = Invoke-PostAnsibleInternalJsonResult -ItemType "job_templates" -itemId $ID -ItemSubItem "launch"
+	$params = @{
+		ItemType = 'job_templates';
+		itemId = $ID;
+		ItemSubItem = 'launch';
+	};
+	if ($Data) {
+		$params.Add('InputObject', $Data);
+	}
+    $result = Invoke-PostAnsibleInternalJsonResult @params;
     if (!$result -and !$result.id) {
         throw ("Failed to start job for job template ID [{0}]" -f $ID);
     }

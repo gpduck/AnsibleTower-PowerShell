@@ -108,6 +108,7 @@ namespace AnsibleTower
         public string extra_vars { get; set; }
         public string job_tags { get; set; }
         public int job_template { get; set; }
+        public string result_stdout { get; set; }
         public DateTime? started { get; set; }
         public DateTime? finished { get; set; }
     }
