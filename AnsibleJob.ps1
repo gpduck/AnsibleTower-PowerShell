@@ -28,17 +28,17 @@ function Get-AnsibleJob
     }
 
     # Return the job(s).
-    $returnObjs
+    $returnObjs;
 }
 
 function Invoke-AnsibleJob
 {
     [CmdletBinding()]
     param(
-        [Parameter(ValueFromPipelineByPropertyName=$true,Mandatory=$true,ParameterSetName='ByObj')]
+        [Parameter(ValueFromPipelineByPropertyName=$true,Mandatory=$true,Position=0,ParameterSetName='ByObj')]
         [AnsibleTower.JobTemplate]$JobTemplate,
 
-        [Parameter(ValueFromPipelineByPropertyName=$true,Mandatory=$true,ParameterSetName='ById')]
+        [Parameter(ValueFromPipelineByPropertyName=$true,Mandatory=$true,Position=0,ParameterSetName='ById')]
         [int]$ID
     )
 
@@ -113,10 +113,10 @@ function Wait-AnsibleJob
 	#>
 	[CmdletBinding(DefaultParameterSetName='Job')]
     param(
-        [Parameter(ValueFromPipelineByPropertyName=$true,Mandatory=$true,ParameterSetName='Job')]
+        [Parameter(ValueFromPipelineByPropertyName=$true,Mandatory=$true,Position=0,ParameterSetName='Job')]
         [AnsibleTower.Job]$Job,
 
-        [Parameter(ValueFromPipelineByPropertyName=$true,Mandatory=$true,ParameterSetName='ID')]
+        [Parameter(ValueFromPipelineByPropertyName=$true,Mandatory=$true,Position=0,ParameterSetName='ID')]
         [int]$ID,
 
 		[int]$Timeout = 3600,
@@ -148,7 +148,7 @@ function Wait-AnsibleJob
 			Write-Verbose ("Sleeping [{0}] seconds..." -f $Interval);
 			sleep -Seconds $Interval
 		}
-		$Job = Get-AnsibleJob -id $ID;
+		$Job = Get-AnsibleJob -id $Job.id;
 	}
 
 	# Return the job object.

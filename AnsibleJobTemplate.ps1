@@ -165,6 +165,5 @@ function Invoke-AnsibleJobTemplate
     if (!$result -and !$result.id) {
         throw ("Failed to start job for job template ID [{0}]" -f $ID);
     }
-    $jobId = $result.id
-    Get-AnsibleJob -id $jobId
+    Get-AnsibleJob -id $result.id
 }
