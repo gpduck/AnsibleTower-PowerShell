@@ -49,7 +49,7 @@ $PackageRestoreEnabled = $False
 
 # Enable/disable use of PSScriptAnalyzer to perform script analysis.
 [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssigments', '')]
-$ScriptAnalysisEnabled = $false
+$ScriptAnalysisEnabled = $true
 
 # When PSScriptAnalyzer is enabled, control which severity level will generate a build failure.
 # Valid values are Error, Warning, Information and None.  "None" will report errors but will not
@@ -282,5 +282,17 @@ Task AfterTest -After Test {
         $wc.UploadFile("https://ci.appveyor.com/api/testresults/xunit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path $TestOutputFile))
     } else {
         "Skipping upload test results"
+    }
+}
+
+Task AfterClean -After Clean {
+    exec { dotnet clean --configuration="Release" .\AnsibleTowerClasses\ }
+    $BinPath = Join-Path $SrcRootDir "bin"
+
+    # Maybe a bit paranoid but this task nuked \ on my laptop. Good thing I was not running as admin.
+    if ($BinPath.Length -gt 3 -and (Test-path $BinPath)) {
+        Get-ChildItem $Binpath | Remove-Item -Recurse -Force -Verbose:$VerbosePreference
+    } else {
+        Write-Verbose "$($Task.Name) - `$BinPath '$BinPath' must be longer than 3 characters."
     }
 }

@@ -1,6 +1,7 @@
 Function New-AnsibleHost
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess=$true)]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "Global:DefaultAnsibleTower")]
     Param (
         [Parameter(Mandatory=$true)]
         [string]$Name,
@@ -9,10 +10,10 @@ Function New-AnsibleHost
         [string]$Description,
 
         [Parameter(Mandatory=$true)]
-        $Inventory, 
+        $Inventory,
 
         [Parameter(Mandatory=$true)]
-        $group, 
+        $group,
 
         [String]$Variables = "---",
 
@@ -20,7 +21,7 @@ Function New-AnsibleHost
 
         $AnsibleTower = $Global:DefaultAnsibleTower
     )
-    
+
     $InventoryId = $null
     switch($Inventory.GetType().Fullname) {
         "AnsibleTower.Inventory" {
@@ -55,13 +56,14 @@ Function New-AnsibleHost
         }
     }
 
-    $myobj = "" | Select name, description, inventory, variables, enabled
+    $myobj = "" | Select-Object name, description, inventory, variables, enabled
     $myobj.Name = $Name
     $myobj.Description = $Description
     $myobj.Inventory = $InventoryId
     $myobj.variables = $Variables
     $myobj.enabled = $Enabled
 
-    $result = Invoke-PostAnsibleInternalJsonResult -ItemType "groups" -InputObject $myobj -itemId $GroupId -ItemSubItem "hosts"
-    
+    if($PSCmdlet.ShouldProcess($AnsibleTower.ToString(), "Create host $($MyObj.Name)")) {
+        Invoke-PostAnsibleInternalJsonResult -ItemType "groups" -InputObject $myobj -itemId $GroupId -ItemSubItem "hosts" > $null
+    }
 }

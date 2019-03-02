@@ -7,17 +7,18 @@ $script:AnsibleCredential = $null;
 if($PSVersionTable["PSEdition"] -eq "Core") {
     $DllPath  = join-path $PSScriptRoot "bin\netstandard2.0\AnsibleTower.dll"
 } else {
-    $DllPath  = join-path $PSScriptRoot "bin\net45\AnsibleTower.dll"
+    $DllPath  = join-path $PSScriptRoot "bin\net452\AnsibleTower.dll"
 }
 Add-Type -Path $DllPath
 
 # Load the json parsers to have it handy whenever.
+[System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssigments', '')]
 $JsonParsers = New-Object AnsibleTower.JsonFunctions
 
 #D ot-source/Load the other powershell scripts
-Get-ChildItem "*.ps1" -path $PSScriptRoot | where {$_.Name -notmatch "tests|Build|Default"} |  ForEach-Object { . $_.FullName }
-Get-ChildItem "*.ps1" -Path $PSScriptRoot/InternalFunctions | where {$_.Name -notmatch "tests"} |  ForEach-Object { . $_.FullName }
-Get-ChildItem "*.ps1" -Path $PSScriptRoot/ExportedFunctions | where {$_.Name -notmatch "tests"} |  ForEach-Object { . $_.FullName }
+Get-ChildItem "*.ps1" -path $PSScriptRoot | Where-Object {$_.Name -notmatch "tests|Build|Default"} |  ForEach-Object { . $_.FullName }
+Get-ChildItem "*.ps1" -Path $PSScriptRoot/InternalFunctions | Where-Object {$_.Name -notmatch "tests"} |  ForEach-Object { . $_.FullName }
+Get-ChildItem "*.ps1" -Path $PSScriptRoot/ExportedFunctions | Where-Object {$_.Name -notmatch "tests"} |  ForEach-Object { . $_.FullName }
 
 
 function Disable-CertificateVerification
@@ -28,19 +29,19 @@ function Disable-CertificateVerification
     #>
 
     # Danm you here-strings for messing up my indendation!!
-    Add-Type @" 
-    using System.Net; 
-    using System.Security.Cryptography.X509Certificates; 
-     
-    public class NoSSLCheckPolicy : ICertificatePolicy { 
-        public NoSSLCheckPolicy() {} 
-        public bool CheckValidationResult( 
-            ServicePoint sPoint, X509Certificate cert, 
-            WebRequest wRequest, int certProb) { 
-            return true; 
-        } 
-    } 
-"@ 
+    Add-Type @"
+    using System.Net;
+    using System.Security.Cryptography.X509Certificates;
+
+    public class NoSSLCheckPolicy : ICertificatePolicy {
+        public NoSSLCheckPolicy() {}
+        public bool CheckValidationResult(
+            ServicePoint sPoint, X509Certificate cert,
+            WebRequest wRequest, int certProb) {
+            return true;
+        }
+    }
+"@
     [System.Net.ServicePointManager]::CertificatePolicy = new-object NoSSLCheckPolicy
 }
 
@@ -63,7 +64,12 @@ function Join-AnsibleUrl
         [string[]]$Parts
     )
 
-    return (($Parts | ? { $_ } | % { $_.trim('/').trim() } | ? { $_ } ) -join '/') + '/';
+    return (
+        ($Parts | Where-Object { $_ } | ForEach-Object {
+            $_.trim('/').trim()
+        } | Where-Object { $_ }
+        ) -join '/'
+    ) + '/';
 }
 
 function Get-AnsibleResourceUrl
@@ -82,9 +88,11 @@ function Get-AnsibleResourceUrl
     .OUTPUTS
     API url part for the specified resource, e.g. "/api/v1/job_templates/"
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "Global:DefaultAnsibleTower")]
     param(
         [Parameter(Mandatory=$true)]
         [string]$Resource,
+
         $AnsibleTower = $Global:DefaultAnsibleTower
     )
 
@@ -102,6 +110,7 @@ function Get-AnsibleResourceUrl
 
 function Invoke-GetAnsibleInternalJsonResult
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "Global:DefaultAnsibleTower")]
     param(
         [Parameter(Mandatory=$true)]
         $ItemType,
@@ -139,12 +148,12 @@ function Invoke-GetAnsibleInternalJsonResult
             Write-Output $invokeResult.results
         }
         $ItemApiUrl = $InvokeResult.Next
-        $QS = $null
     } while($ItemApiUrl)
 }
 
 Function Invoke-PostAnsibleInternalJsonResult
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "Global:DefaultAnsibleTower")]
     param(
         [Parameter(Mandatory=$true)]
         $ItemType,
@@ -173,7 +182,7 @@ Function Invoke-PostAnsibleInternalJsonResult
     if ($InputObject) {
         $Body["Body"] = $InputObject | ConvertTo-Json -Depth 99
     }
-    
+
     Write-Verbose ("Invoke-PostAnsibleInternalJsonResult: Invoking url [{0}]" -f $params.Uri);
     Invoke-AnsibleRequest -FullPath $ItemApiUrl -AnsibleTower $AnsibleTower -Method POST @Body
     #return Invoke-RestMethod @params
@@ -213,7 +222,7 @@ function Connect-AnsibleTower
     <#
     .SYNOPSIS
     Connects to the Tower API and returns the user details.
-    
+
     .PARAMETER Credential
     Credential to authenticate with at the Tower API.
 
@@ -234,6 +243,7 @@ function Connect-AnsibleTower
     Connects to the Tower host at 'https://ansible.domain.local' using the credential supplied in $myCredential. Any certificate errors are ignored.
     User details beloning to the specified credential are in the $me variable.
     #>
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "Global:DefaultAnsibleTower")]
     param (
         [Parameter(Mandatory=$true)]
         [System.Management.Automation.PSCredential]$Credential,
@@ -250,7 +260,7 @@ function Connect-AnsibleTower
     }
 
     if ($TowerUrl -match "/api") {
-        throw "Specify the URL without the /api part"    
+        throw "Specify the URL without the /api part"
     }
 
     $ModuleConfig = Get-ModuleConfig
@@ -274,7 +284,7 @@ function Connect-AnsibleTower
     {
        throw ("Could not connect to Tower api url: " + $_.Exception.Message);
     }
-    
+
 
     $TokenUri = Join-AnsibleUrl $TowerUrl,'api','o','token'
     $QueryParams = [System.Web.HttpUtility]::ParseQueryString("")
@@ -302,6 +312,7 @@ function Connect-AnsibleTower
             $Tower.Endpoints.Add($_.Name, $Endpoints."$($_.Name)")
         }
         #TODO: if ! -notdefault
+        [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssigments', '')]
         $Global:DefaultAnsibleTower = $Tower
     } catch {
         Write-Error -Message ("Could not authenticate: " + $_.Exception.Message) -Exception $_.Exception

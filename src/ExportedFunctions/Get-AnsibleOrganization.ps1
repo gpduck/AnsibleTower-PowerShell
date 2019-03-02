@@ -1,6 +1,7 @@
 function Get-AnsibleOrganization
 {
     [CmdletBinding()]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "Global:DefaultAnsibleTower")]
     Param (
         [String]$Name,
 
@@ -27,7 +28,6 @@ function Get-AnsibleOrganization
         {
             $Return = Invoke-GetAnsibleInternalJsonResult -ItemType "organizations" -AnsibleTower $AnsibleTower -Filter $Filter
         }
-        
 
         if (!($Return))
         {

@@ -14,7 +14,7 @@ function Get-AnsibleUser
     {
         $Return = Invoke-GetAnsibleInternalJsonResult -ItemType "users"
     }
-    
+
 
     if (!($Return))
     {
@@ -36,55 +36,60 @@ function Get-AnsibleUser
 
 Function New-AnsibleUser
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSAvoidUsingUserNameAndPassWordParams', '')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSAvoidUsingPlainTextForPassword', '')]
+    [CmdletBinding(SupportsShouldProcess=$true)]
     Param (
         [Parameter(Mandatory=$true)]
         $UserName,
-        [Parameter(Mandatory=$true)] 
-        $FirstName, 
         [Parameter(Mandatory=$true)]
-        $LastName, 
+        $FirstName,
         [Parameter(Mandatory=$true)]
-        $Email, 
+        $LastName,
         [Parameter(Mandatory=$true)]
-        [bool]$SuperUser, 
+        $Email,
+        [Parameter(Mandatory=$true)]
+        [bool]$SuperUser,
         [Parameter(Mandatory=$true)]
         $Password
     )
-    $myobj = "" | Select username, first_name, last_name, email, is_superuser, password
+    $myobj = "" | Select-Object username, first_name, last_name, email, is_superuser, password
     $myobj.username = $UserName
     if ($FirstName){$myobj.first_name = $FirstName}
     if ($LastName){$myobj.last_name = $LastName}
     if ($Email){$myobj.email = $Email}
     if ($SuperUser) {$myobj.is_superuser = $SuperUser}
     if ($Password) {$myobj.password = $Password}
-    
-    $result = Invoke-PostAnsibleInternalJsonResult -ItemType "users" -InputObject $myobj
-    if ($result)
-    {
-        $resultString = $result | ConvertTo-Json
-        $resultobj = $JsonParsers.ParseToUser($resultString)
-        $resultobj
+
+    if($PSCmdlet.ShouldProcess($AnsibleTower, "Create user $UserName")) {
+        $result = Invoke-PostAnsibleInternalJsonResult -ItemType "users" -InputObject $myobj
+        if ($result)
+        {
+            $resultString = $result | ConvertTo-Json
+            $resultobj = $JsonParsers.ParseToUser($resultString)
+            $resultobj
+        }
     }
-    
 }
 
 Function Set-AnsibleUser
 {
-    [CmdletBinding()]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSAvoidUsingUserNameAndPassWordParams', '')]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage('PSAvoidUsingPlainTextForPassword', '')]
+    [CmdletBinding(SupportsShouldProcess=$true)]
     Param (
         [Parameter(ValueFromPipelineByPropertyName=$true,Mandatory=$true)]
         $id,
         #[Parameter(Mandatory=$true)]
         $UserName,
-        #[Parameter(Mandatory=$true)] 
-        $FirstName, 
         #[Parameter(Mandatory=$true)]
-        $LastName, 
+        $FirstName,
         #[Parameter(Mandatory=$true)]
-        $Email, 
+        $LastName,
         #[Parameter(Mandatory=$true)]
-        [bool]$SuperUser, 
+        $Email,
+        #[Parameter(Mandatory=$true)]
+        [bool]$SuperUser,
         #[Parameter(Mandatory=$true)]
         $Password
     )
@@ -97,13 +102,14 @@ Function Set-AnsibleUser
     if ($Email){$thisuser.email = $Email}
     if ($SuperUser) {$thisuser.is_superuser = $SuperUser}
     if ($Password) {$thisuser.password = $Password}
-    
-    $result = Invoke-PutAnsibleInternalJsonResult -ItemType "users" -InputObject $thisuser
-    if ($result)
-    {
-        $resultString = $result | ConvertTo-Json
-        $resultobj = $JsonParsers.ParseToUser($resultString)
-        $resultobj
+
+    if($PSCmdlet.ShouldProcess($AnsibleTower, "Update user $($ThisUser.Username)")) {
+        $result = Invoke-PutAnsibleInternalJsonResult -ItemType "users" -InputObject $thisuser
+        if ($result)
+        {
+            $resultString = $result | ConvertTo-Json
+            $resultobj = $JsonParsers.ParseToUser($resultString)
+            $resultobj
+        }
     }
-    
 }
