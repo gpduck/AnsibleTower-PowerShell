@@ -2,6 +2,7 @@ version: 0.3.{build}
 skip_tags: true
 image:
   - Visual Studio 2017
+  - ubuntu1804
 init:
 - ps:
 environment:
@@ -12,17 +13,17 @@ environment:
 install:
 - ps: |
     import-module powershellget
-    Install-module PowerShellGet -force -AllowClobber -SkipPublisherCheck
+    Install-module PowerShellGet -force -AllowClobber -SkipPublisherCheck -Scope CurrentUser
     Remove-Module PowerShellGet -Force
     Import-Module PowerShellGet -Force
 
     Get-PackageProvider -Name NuGet -ForceBootstrap
 
-    install-module pester -force -AllowClobber -SkipPublisherCheck
-    install-module PSScriptAnalyzer -force -AllowClobber -SkipPublisherCheck
+    install-module pester -force -AllowClobber -SkipPublisherCheck -Scope CurrentUser
+    install-module PSScriptAnalyzer -force -AllowClobber -SkipPublisherCheck -Scope CurrentUser
 build_script:
 - ps: |
-      if($env:APPVEYOR_REPO_BRANCH -ne "master" -or $env:APPVEYOR_PULL_REQUEST_NUMBER -or $env:APPVEYOR_REPO_COMMIT_MESSAGE -like "skip: *") {
+      if($env:APPVEYOR_REPO_BRANCH -ne "master" -or $env:APPVEYOR_PULL_REQUEST_NUMBER -or $env:APPVEYOR_REPO_COMMIT_MESSAGE -like "skip: *" -or $env:OS -ne "Windows_NT") {
         .\Invoke-Build.ps1 build,test
       } else {
         .\Invoke-Build.ps1 publish
@@ -39,3 +40,4 @@ deploy:
   draft: true
   on:
     APPVEYOR_REPO_BRANCH: master
+    OS: Windows_NT
