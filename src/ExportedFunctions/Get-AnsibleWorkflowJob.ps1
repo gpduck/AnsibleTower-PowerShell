@@ -1,90 +1,59 @@
 <#
 .DESCRIPTION
-Gets job status from Ansible Tower.
-
-.PARAMETER ControllerNode
-The instance that managed the isolated execution environment.
+Gets workflow jobs defined in Ansible Tower.
 
 .PARAMETER Description
-Optional description of this job.
-
-.PARAMETER ExecutionNode
-The node the job executed on.
-
-.PARAMETER InstanceGroup
-The Rampart/Instance group the job was run under
+Optional description of this workflow job.
 
 .PARAMETER JobExplanation
 A status field to indicate the state of the job if it wasn't able to run and capture stdout
 
-.PARAMETER Name
-Name of this job.
+.PARAMETER JobTemplate
+If automatically created for a sliced job run, the job template the workflow job was created from.
 
-.PARAMETER ScmRevision
-The SCM Revision from the Project used for this job, if available
+.PARAMETER Name
+Name of this workflow job.
 
 .PARAMETER Id
-The ID of a specific AnsibleJob to get
+The ID of a specific AnsibleWorkflowJob to get
 
 .PARAMETER AnsibleTower
 The Ansible Tower instance to run against.  If no value is passed the command will run against $Global:DefaultAnsibleTower.
 #>
-function Get-AnsibleJob {
+function Get-AnsibleWorkflowJob {
     [CmdletBinding(DefaultParameterSetname='PropertyFilter')]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "Global:DefaultAnsibleTower")]
     param(
         [Parameter(ParameterSetName='PropertyFilter')]
-        [String]$ControllerNode,
+        [switch]$AllowSimultaneous,
 
         [Parameter(ParameterSetName='PropertyFilter')]
         [String]$Description,
 
         [Parameter(ParameterSetName='PropertyFilter')]
-        [String]$ExecutionNode,
-
-        [Parameter(ParameterSetName='PropertyFilter')]
         [String]$ExtraVars,
 
         [Parameter(ParameterSetName='PropertyFilter')]
-        [Object]$InstanceGroup,
+        [switch]$Failed,
 
         [Parameter(Position=2,ParameterSetName='PropertyFilter')]
         [Object]$Inventory,
 
         [Parameter(ParameterSetName='PropertyFilter')]
-        [String]$JobExplanation,
+        [switch]$IsSlicedJob,
 
         [Parameter(ParameterSetName='PropertyFilter')]
-        [String]$JobTags,
+        [String]$JobExplanation,
 
         [Parameter(ParameterSetName='PropertyFilter')]
         [Object]$JobTemplate,
 
         [Parameter(ParameterSetName='PropertyFilter')]
-        [ValidateSet('run','check')]
-        [string]$JobType,
-
-        [Parameter(ParameterSetName='PropertyFilter')]
         [ValidateSet('manual','relaunch','callback','scheduled','dependency','workflow','sync','scm')]
         [string]$LaunchType,
 
-        [Parameter(ParameterSetName='PropertyFilter')]
-        [String]$Limit,
-
         [Parameter(Position=1,ParameterSetName='PropertyFilter')]
         [String]$Name,
-
-        [Parameter(ParameterSetName='PropertyFilter')]
-        [String]$Playbook,
-
-        [Parameter(Position=3,ParameterSetName='PropertyFilter')]
-        [Object]$Project,
-
-        [Parameter(ParameterSetName='PropertyFilter')]
-        [String]$ScmRevision,
-
-        [Parameter(ParameterSetName='PropertyFilter')]
-        [String]$SkipTags,
 
         [Parameter(ParameterSetName='PropertyFilter')]
         [ValidateSet('new','pending','waiting','running','successful','failed','error','canceled')]
@@ -94,23 +63,17 @@ function Get-AnsibleJob {
         [Object]$UnifiedJobTemplate,
 
         [Parameter(ParameterSetName='PropertyFilter')]
-        [ValidateSet(0,1,2,3,4,5)]
-        [string]$Verbosity,
+        [Object]$WorkflowJobTemplate,
 
-        [Parameter(ValueFromPipelineByPropertyName=$true,ParameterSetName='ById')]
+        [Parameter(ParameterSetName='ById')]
         [Int32]$Id,
 
         $AnsibleTower = $Global:DefaultAnsibleTower
     )
-    process {
+    End {
         $Filter = @{}
-
-        if($PSBoundParameters.ContainsKey("ControllerNode")) {
-            if($ControllerNode.Contains("*")) {
-                $Filter["controller_node__iregex"] = $ControllerNode.Replace("*", ".*")
-            } else {
-                $Filter["controller_node"] = $ControllerNode
-            }
+        if($PSBoundParameters.ContainsKey("AllowSimultaneous")) {
+            $Filter["allow_simultaneous"] = $AllowSimultaneous
         }
 
         if($PSBoundParameters.ContainsKey("Description")) {
@@ -118,14 +81,6 @@ function Get-AnsibleJob {
                 $Filter["description__iregex"] = $Description.Replace("*", ".*")
             } else {
                 $Filter["description"] = $Description
-            }
-        }
-
-        if($PSBoundParameters.ContainsKey("ExecutionNode")) {
-            if($ExecutionNode.Contains("*")) {
-                $Filter["execution_node__iregex"] = $ExecutionNode.Replace("*", ".*")
-            } else {
-                $Filter["execution_node"] = $ExecutionNode
             }
         }
 
@@ -137,22 +92,8 @@ function Get-AnsibleJob {
             }
         }
 
-        if($PSBoundParameters.ContainsKey("InstanceGroup")) {
-            switch($InstanceGroup.GetType().Fullname) {
-                "AnsibleTower.InstanceGroup" {
-                    $Filter["instance_group"] = $InstanceGroup.Id
-                }
-                "System.Int32" {
-                    $Filter["instance_group"] = $InstanceGroup
-                }
-                "System.String" {
-                    $Filter["instance_group__name"] = $InstanceGroup
-                }
-                default {
-                    Write-Error "Unknown type passed as -InstanceGroup ($_).  Supported values are String, Int32, and AnsibleTower.InstanceGroup." -ErrorAction Stop
-                    return
-                }
-            }
+        if($PSBoundParameters.ContainsKey("Failed")) {
+            $Filter["failed"] = $Failed
         }
 
         if($PSBoundParameters.ContainsKey("Inventory")) {
@@ -173,19 +114,15 @@ function Get-AnsibleJob {
             }
         }
 
+        if($PSBoundParameters.ContainsKey("IsSlicedJob")) {
+            $Filter["is_sliced_job"] = $IsSlicedJob
+        }
+
         if($PSBoundParameters.ContainsKey("JobExplanation")) {
             if($JobExplanation.Contains("*")) {
                 $Filter["job_explanation__iregex"] = $JobExplanation.Replace("*", ".*")
             } else {
                 $Filter["job_explanation"] = $JobExplanation
-            }
-        }
-
-        if($PSBoundParameters.ContainsKey("JobTags")) {
-            if($JobTags.Contains("*")) {
-                $Filter["job_tags__iregex"] = $JobTags.Replace("*", ".*")
-            } else {
-                $Filter["job_tags"] = $JobTags
             }
         }
 
@@ -207,14 +144,6 @@ function Get-AnsibleJob {
             }
         }
 
-        if($PSBoundParameters.ContainsKey("JobType")) {
-            if($JobType.Contains("*")) {
-                $Filter["job_type__iregex"] = $JobType.Replace("*", ".*")
-            } else {
-                $Filter["job_type"] = $JobType
-            }
-        }
-
         if($PSBoundParameters.ContainsKey("LaunchType")) {
             if($LaunchType.Contains("*")) {
                 $Filter["launch_type__iregex"] = $LaunchType.Replace("*", ".*")
@@ -223,61 +152,11 @@ function Get-AnsibleJob {
             }
         }
 
-        if($PSBoundParameters.ContainsKey("Limit")) {
-            if($Limit.Contains("*")) {
-                $Filter["limit__iregex"] = $Limit.Replace("*", ".*")
-            } else {
-                $Filter["limit"] = $Limit
-            }
-        }
-
         if($PSBoundParameters.ContainsKey("Name")) {
             if($Name.Contains("*")) {
                 $Filter["name__iregex"] = $Name.Replace("*", ".*")
             } else {
                 $Filter["name"] = $Name
-            }
-        }
-
-        if($PSBoundParameters.ContainsKey("Playbook")) {
-            if($Playbook.Contains("*")) {
-                $Filter["playbook__iregex"] = $Playbook.Replace("*", ".*")
-            } else {
-                $Filter["playbook"] = $Playbook
-            }
-        }
-
-        if($PSBoundParameters.ContainsKey("Project")) {
-            switch($Project.GetType().Fullname) {
-                "AnsibleTower.Project" {
-                    $Filter["project"] = $Project.Id
-                }
-                "System.Int32" {
-                    $Filter["project"] = $Project
-                }
-                "System.String" {
-                    $Filter["project__name"] = $Project
-                }
-                default {
-                    Write-Error "Unknown type passed as -Project ($_).  Supported values are String, Int32, and AnsibleTower.Project." -ErrorAction Stop
-                    return
-                }
-            }
-        }
-
-        if($PSBoundParameters.ContainsKey("ScmRevision")) {
-            if($ScmRevision.Contains("*")) {
-                $Filter["scm_revision__iregex"] = $ScmRevision.Replace("*", ".*")
-            } else {
-                $Filter["scm_revision"] = $ScmRevision
-            }
-        }
-
-        if($PSBoundParameters.ContainsKey("SkipTags")) {
-            if($SkipTags.Contains("*")) {
-                $Filter["skip_tags__iregex"] = $SkipTags.Replace("*", ".*")
-            } else {
-                $Filter["skip_tags"] = $SkipTags
             }
         }
 
@@ -307,18 +186,28 @@ function Get-AnsibleJob {
             }
         }
 
-        if($PSBoundParameters.ContainsKey("Verbosity")) {
-            if($Verbosity.Contains("*")) {
-                $Filter["verbosity__iregex"] = $Verbosity.Replace("*", ".*")
-            } else {
-                $Filter["verbosity"] = $Verbosity
+        if($PSBoundParameters.ContainsKey("WorkflowJobTemplate")) {
+            switch($WorkflowJobTemplate.GetType().Fullname) {
+                "AnsibleTower.WorkflowJobTemplate" {
+                    $Filter["workflow_job_template"] = $WorkflowJobTemplate.Id
+                }
+                "System.Int32" {
+                    $Filter["workflow_job_template"] = $WorkflowJobTemplate
+                }
+                "System.String" {
+                    $Filter["workflow_job_template__name"] = $WorkflowJobTemplate
+                }
+                default {
+                    Write-Error "Unknown type passed as -WorkflowJobTemplate ($_).  Supported values are String, Int32, and AnsibleTower.WorkflowJobTemplate." -ErrorAction Stop
+                    return
+                }
             }
         }
 
         if($id) {
-            $Return = Invoke-GetAnsibleInternalJsonResult -ItemType "jobs" -Id $Id -AnsibleTower $AnsibleTower
+            $Return = Invoke-GetAnsibleInternalJsonResult -ItemType "workflow_jobs" -Id $Id -AnsibleTower $AnsibleTower
         } else {
-            $Return = Invoke-GetAnsibleInternalJsonResult -ItemType "jobs" -Filter $Filter -AnsibleTower $AnsibleTower
+            $Return = Invoke-GetAnsibleInternalJsonResult -ItemType "workflow_jobs" -Filter $Filter -AnsibleTower $AnsibleTower
         }
 
         if(!($Return)) {
@@ -326,7 +215,7 @@ function Get-AnsibleJob {
         }
         foreach($ResultObject in $Return) {
             $JsonString = $ResultObject | ConvertTo-Json
-            $AnsibleObject = [AnsibleTower.JsonFunctions]::ParseTojob($JsonString)
+            $AnsibleObject = [AnsibleTower.JsonFunctions]::ParseToWorkflowJob($JsonString)
             $AnsibleObject.AnsibleTower = $AnsibleTower
             Write-Output $AnsibleObject
             $AnsibleObject = $Null

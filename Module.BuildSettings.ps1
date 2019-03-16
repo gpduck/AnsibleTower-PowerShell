@@ -107,8 +107,6 @@ $CatalogVersion = 2
 [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssigments', '')]
 $CodeCoverageEnabled = $false
 
-$ExcludeTestTags = @("Integration")
-
 # CodeCoverageFiles specifies the files to perform code coverage analysis on. This property
 # acts as a direct input to the Pester -CodeCoverage parameter, so will support constructions
 # like the ones found here: https://github.com/pester/Pester/wiki/Code-Coverage.
@@ -200,12 +198,16 @@ Task AfterStageFiles -After StageFiles {
 # Customize these tasks for performing operations before and/or after Build.
 ###############################################################################
 
+Task BeforeInit -Before Init {
+    $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 1
+}
+
 # Executes before the BeforeStageFiles phase of the Build task.
 Task BeforeBuild -Before Build {
 }
 
 # Executes after the Build task.
-Task AfterBuild -After Build {
+Task AfterBuild -if (!$CopyOnly) -After Build {
     try {
         Microsoft.PowerShell.Management\Push-Location -LiteralPath $OutDir
         Import-Module microsoft.powershell.archive
@@ -314,18 +316,17 @@ Task AfterClean -After Clean {
 }
 
 Task IntegrationTests {
-    Microsoft.PowerShell.Management\Push-Location -LiteralPath test
+    Microsoft.PowerShell.Management\Push-Location -LiteralPath test-integration
     try {
         Import-Module Pester
         $IntegrationTestOutputFile = "$PSScriptRoot/IntegrationTests.xml"
-        $TestResult = Invoke-Pester -Script @{ Path='./integration'; Parameters=@{ }} -Tag Integration -OutputFile $IntegrationTestOutputFile -OutputFormat "NUnitXml" -PassThru
+        $TestResult = Invoke-Pester -OutputFile $IntegrationTestOutputFile -OutputFormat "NUnitXml" -PassThru
         if($env:APPVEYOR_JOB_ID -and (Test-Path $IntegrationTestOutputFile)) {
             try {
                 $wc = New-Object System.Net.WebClient
                 $wc.UploadFile("https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)", $IntegrationTestOutputFile)
                 Write-Host "Uploaded integration test results"
                 Push-AppveyorArtifact -Path $IntegrationTestOutputFile
-                cat $IntegrationTestOutputFile
             } catch {
                 $e = $_.Exception
                 do {
@@ -337,9 +338,9 @@ Task IntegrationTests {
             "Skipping upload integration test results"
         }
 
-        Assert -Condition {
+        Assert -Condition (
             $TestResult.FailedCount -eq 0
-        } -Message "One or more integration tests failed, build cannot continue."
+        ) -Message "One or more integration tests failed, build cannot continue."
     } finally {
         Microsoft.PowerShell.Management\Pop-Location
     }

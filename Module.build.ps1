@@ -9,7 +9,9 @@ param(
     $SharedProperties,
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssigments', '')]
-    $LineSep
+    $LineSep,
+
+    [Switch]$CopyOnly
 )
 
 ###############################################################################
@@ -48,7 +50,7 @@ Task Init {
     }
 }
 
-Task Clean Init, {
+Task Clean -if (!$CopyOnly) Init, {
     # Maybe a bit paranoid but this task nuked \ on my laptop. Good thing I was not running as admin.
     if ($OutDir.Length -gt 3) {
         Get-ChildItem $OutDir | Remove-Item -Recurse -Force -Verbose:$VerbosePreference
@@ -77,7 +79,11 @@ Task StageFiles Init, Clean, {
         Write-Verbose "$($Task.Name) - directory already exists '$ModuleOutDir'."
     }
 
-    Copy-Item -Path $SrcRootDir\* -Destination $ModuleOutDir -Recurse -Exclude $Exclude -Verbose:$VerbosePreference
+    if($CopyOnly) {
+        $ExcludeFiles = $Exclude + "*.dll"
+    }
+
+    Copy-Item -Path $SrcRootDir\* -Destination $ModuleOutDir -Recurse -Exclude $ExcludeFiles -Force -Verbose:$VerbosePreference
 }
 
 Task Build Init, Clean, StageFiles, Analyze, Sign
@@ -307,7 +313,7 @@ Task Install Build, BuildHelp, GenerateFileCatalog, {
     "Module installed into $InstallPath"
 }
 
-Task Test -If (Get-Module Pester -ListAvailable) Build,{
+Task Test -If (Get-Module Pester -ListAvailable) {
     Import-Module Pester
 
     try {
@@ -317,14 +323,12 @@ Task Test -If (Get-Module Pester -ListAvailable) Build,{
             $testing = @{
                 OutputFile   = $TestOutputFile
                 OutputFormat = $TestOutputFormat
-                ExcludeTag = $ExcludeTestTags
                 PassThru     = $true
                 Verbose      = $VerbosePreference
             }
         }
         else {
             $testing = @{
-                ExcludeTag = $ExcludeTestTags
                 PassThru     = $true
                 Verbose      = $VerbosePreference
             }
@@ -353,7 +357,7 @@ Task Test -If (Get-Module Pester -ListAvailable) Build,{
     }
 }
 
-Task Publish Build, Test, BuildHelp, GenerateFileCatalog, {
+Task Publish BuildHelp, GenerateFileCatalog, {
     $publishParams = @{
         Path        = $ModuleOutDir
         NuGetApiKey = $NuGetApiKey
