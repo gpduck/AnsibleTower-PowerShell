@@ -109,9 +109,26 @@ function IntegrationTest {
                 $H.Name | Should -Be "localhost"
             }
 
+            It "Parses the host inventory property correctly" {
+                $H = Get-AnsibleHost -Name localhost -Inventory "Demo Inventory"
+                $H.Inventory.Name | Should -Be "Demo Inventory"
+            }
+
             It "Sets AnsibleTower on hosts" {
                 $H = Get-AnsibleHost -Name localhost -Inventory "Demo Inventory"
                 $H.AnsibleTower | Should -Not -Be $null
+            }
+
+            It "Set-AnsibleHost parses the host inventory property correctly" {
+                $H = Get-AnsibleHost -Name localhost -Inventory "Demo Inventory"
+                $SetHost = $H | Set-AnsibleHost -Description "PowerShell" -PassThru
+                $SetHost.Inventory.Name | SHould -Be "Demo Inventory"
+            }
+
+            It "Set-AnsibleHost updates a host" {
+                $H = Get-AnsibleHost -Name localhost -Inventory "Demo Inventory"
+                $SetHost = $H | Set-AnsibleHost -Description "Updated by PowerShell" -PassThru
+                $SetHost.Description | SHould -Be "Updated by PowerShell"
             }
 
             It "Gets the demo job template" {
