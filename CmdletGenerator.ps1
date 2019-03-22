@@ -627,6 +627,40 @@ New-SchemaCmdlet @SetUser
 #>
 
 <#
+$SetHost = @{
+    Type = "hosts"
+    Verb = "Set"
+    Noun = "AnsibleHost"
+    Class = "AnsibleTower.Host"
+    ExtraPropertyInfo = @{
+        Name = @{ Position = 1 }
+        Description = @{ Position = 2 }
+        Variables = @{ Position = 3 }
+    }
+    ExcludeProperties = @("type","inventory")
+    Description = "Updates an existing host in Ansible Tower."
+}
+New-SchemaCmdlet @SetHost
+#>
+
+<#
+$SetCredential = @{
+    Type = "credentials"
+    Verb = "Set"
+    Noun = "AnsibleCredential"
+    Class = "AnsibleTower.Credential"
+    ExtraPropertyInfo = @{
+        Name = @{ Position = 1 }
+        Description = @{ Position = 2 }
+        Variables = @{ Position = 3 }
+    }
+    ExcludeProperties = @("type")
+    Description = "Updates an existing credential in Ansible Tower."
+}
+New-SchemaCmdlet @SetCredential
+#>
+
+<#
 $NewTeam = @{
     Type = "teams"
     Verb = "New"
@@ -641,6 +675,22 @@ $NewTeam = @{
     Description = "Creates a new team in Ansible Tower."
 }
 New-SchemaCmdlet @NewTeam
+#>
+
+<#
+$NewOrganization = @{
+    Type = "organizations"
+    Verb = "New"
+    Noun = "AnsibleOrganization"
+    Class = "AnsibleTower.Organization"
+    ExtraPropertyInfo = @{
+        Name = @{ Position = 1};
+        Description = @{ Position = 2}
+    }
+    ExcludeProperties = @("type")
+    Description = "Creates a new organization in Ansible Tower."
+}
+New-SchemaCmdlet @NewOrganization
 #>
 
 <#
@@ -692,4 +742,38 @@ $GetUser = @{
     Description = "Gets users defined in Ansible Tower."
 }
 New-SchemaCmdlet @GetUser
+#>
+
+<#
+$GetGroup = @{
+    Type = "groups"
+    Verb = "Get"
+    Noun = "AnsibleGroup"
+    Class = "AnsibleTower.Group"
+    ExtraPropertyInfo = @{
+        Name = @{ Position = 1};
+        Inventory = @{ Position = 2};
+    }
+    ExcludeProperties = @("type")
+    Description = "Gets groups defined in Ansible Tower."
+}
+New-SchemaCmdlet @GetGroup
+#>
+
+<#
+$GetJobTemplate = @{
+    Type = "job_templates"
+    Verb = "Get"
+    Noun = "AnsibleJobTemplate"
+    Class = "AnsibleTower.JobTemplate"
+    ExtraPropertyInfo = @{
+        Name = @{ Position = 1};
+        Project = @{ Position = 2};
+        Inventory = @{ Position = 3};
+        Playbook = @{ Position = 4};
+    }
+    ExcludeProperties = @("type")
+    Description = "Gets job templates defined in Ansible Tower."
+}
+New-SchemaCmdlet @GetJobTemplate
 #>

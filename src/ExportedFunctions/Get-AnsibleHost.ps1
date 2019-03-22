@@ -40,6 +40,9 @@ function Get-AnsibleHost {
         [Parameter(Position=2,ParameterSetName='PropertyFilter')]
         [Object]$Inventory,
 
+        [Parameter(Position=3,ParameterSetName='PropertyFilter')]
+        [Object]$Group,
+
         [Parameter(ParameterSetName='PropertyFilter')]
         [Object]$LastJob,
 
@@ -54,9 +57,6 @@ function Get-AnsibleHost {
 
         $AnsibleTower = $Global:DefaultAnsibleTower
     )
-    begin {
-        $GroupCache = @{}
-    }
     process {
         $Filter = @{}
         if($PSBoundParameters.ContainsKey("Description")) {
@@ -96,6 +96,24 @@ function Get-AnsibleHost {
                 }
                 default {
                     Write-Error "Unknown type passed as -Inventory ($_).  Supported values are String, Int32, and AnsibleTower.Inventory." -ErrorAction Stop
+                    return
+                }
+            }
+        }
+
+        if($PSBoundParameters.ContainsKey("Group")) {
+            switch($Inventory.GetType().Fullname) {
+                "AnsibleTower.Group" {
+                    $Filter["groups__id"] = $Group.id
+                }
+                "System.Int32" {
+                    $Filter["group__id"] = $Group
+                }
+                "System.String" {
+                    $Filter["groups__name"] = $Group
+                }
+                default {
+                    Write-Error "Unknown type passed as -Inventory ($_).  Suppored values are String, Int32, and AnsibleTower.Inventory." -ErrorAction Stop
                     return
                 }
             }
@@ -148,7 +166,11 @@ function Get-AnsibleHost {
             $JsonString = $ResultObject | ConvertTo-Json
             $AnsibleObject = [AnsibleTower.JsonFunctions]::ParseTohost($JsonString)
             $AnsibleObject.AnsibleTower = $AnsibleTower
-            $AnsibleObject = Add-RelatedObject -InputObject $AnsibleObject -ItemType "hosts" -RelatedType "groups" -RelationProperty "Groups" -RelationCommand (Get-Command Get-AnsibleGroup) -Cache $GroupCache -PassThru
+            $CacheKey = "hosts/$($AnsibleObject.Id)"
+            Write-Debug "[Get-AnsibleHost] Caching $($AnsibleObject.Url) as $CacheKey"
+            $AnsibleTower.Cache.Add($CacheKey, $AnsibleObject, $Script:CachePolicy) > $null
+            #Add to cache before filling in child objects to prevent recursive loop
+            $AnsibleObject = Add-RelatedObject -InputObject $AnsibleObject -ItemType "hosts" -RelatedType "groups" -RelationProperty "Groups" -RelationCommand (Get-Command Get-AnsibleGroup) -PassThru
             Write-Output $AnsibleObject
             $AnsibleObject = $Null
         }

@@ -25,12 +25,11 @@ function Get-AnsibleOrganization {
 
         if ($id)
         {
-            if($UseCache) {
-                $OrgKey = "organization/$id"
-                $Organization = $AnsibleTower.Cache.Get($OrgKey)
-            }
-            if($Organization) {
-                $Organization
+            $CacheKey = "organization/$id"
+            $AnsibleObject = $AnsibleTower.Cache.Get($CacheKey)
+            if($UseCache -and $AnsibleObject) {
+                Write-Debug "[Get-AnsibleOrganization] Returning $($AnsibleObject.Url) from cache"
+                $AnsibleObject
             } else {
                 Invoke-GetAnsibleInternalJsonResult -ItemType "organizations" -Id $id -AnsibleTower $AnsibleTower | ConvertToOrganization -AnsibleTower $AnsibleTower
             }
@@ -52,10 +51,12 @@ function ConvertToOrganization {
     )
     process {
         $JsonString = ConvertTo-Json $InputObject
-        $AnsibleObject = $JsonParsers.ParseToOrganization($JsonString)
+        $AnsibleObject = [AnsibleTower.JsonFunctions]::ParseToOrganization($JsonString)
         $AnsibleObject.AnsibleTower = $AnsibleTower
         $CacheKey = "organization/$($AnsibleObject.Id)"
+        Write-Debug "[Get-AnsibleOrganization] Caching $($AnsibleObject.Url) as $CacheKey"
         $AnsibleTower.Cache.Add($CacheKey, $AnsibleObject, $Script:CachePolicy) > $null
+        Write-Debug "[Get-AnsibleOrganization] Returning $($AnsibleObject.Url)"
         $AnsibleObject
     }
 }
