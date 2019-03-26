@@ -206,7 +206,7 @@ function IntegrationTest {
 Import-Module $ModulePath -Force -ErrorAction Stop
 
 if($Url) {
-    IntegrationTests -Password $Password -Url $Url
+    IntegrationTest -Password $Password -Url $Url
 } else {
     #Start all containers first
     $TestList = Get-ChildItem -Directory | ForEach-Object {
