@@ -18,7 +18,9 @@ namespace AnsibleTower
         public object inventory { get; set; }
         public bool enabled { get; set; }
         public string instance_id { get; set; }
-        public string variables { get; set; }
+        [JsonIgnore]
+        public Hashtable variables { get; set; }
+        public IDictionary<string,string> related { get; set; }
         public bool has_active_failures { get; set; }
         public bool has_inventory_sources { get; set; }
         public int? last_job { get; set; }

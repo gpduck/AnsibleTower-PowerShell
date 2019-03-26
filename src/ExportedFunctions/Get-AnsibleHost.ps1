@@ -174,6 +174,9 @@ function Get-AnsibleHost {
             if($AnsibleObject.Inventory) {
                 $AnsibleObject.Inventory = Get-AnsibleInventory -Id $AnsibleObject.Inventory -AnsibleTower $AnsibleTower -UseCache
             }
+            $VariableData = Invoke-AnsibleRequest -Fullpath $AnsibleObject.Related["variable_data"] -AnsibleTower $AnsibleTower
+            $VariableJson = ConvertTo-Json $VariableData -Depth 32
+            $AnsibleObject.Variables = [Newtonsoft.Json.JsonConvert]::DeserializeObject($VariableJson, [hashtable], (New-Object AnsibleTower.HashtableConverter))
             Write-Output $AnsibleObject
             $AnsibleObject = $Null
         }
