@@ -107,6 +107,7 @@ FunctionsToExport = @(
     'Set-AnsibleProject',
     'Set-AnsibleUser',
     'Test-AnsibleTower',
+    'Update-AnsibleVariables',
     'Wait-AnsibleJob'
 )
 
