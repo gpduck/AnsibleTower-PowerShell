@@ -104,5 +104,36 @@ namespace AnsibleTower
             AnsibleTower.Team ConvertedObject = JsonConvert.DeserializeObject<AnsibleTower.Team>(JsonString);
             return ConvertedObject;
         }
+
+        public static string UpdateJson(string json, Hashtable set) {
+            JObject jobject = JObject.Parse(json);
+            foreach(string path in set.Keys) {
+                JToken old = jobject.SelectToken(path);
+                if(old != null) {
+                    old.Replace(JToken.FromObject(set[path]));
+                } else {
+                    jobject.Add(path, JToken.FromObject(set[path]));
+                }
+            }
+            return jobject.ToString();
+        }
+
+        public static string MergeJson(string json, object data) {
+            JObject jobject = JObject.Parse(json);
+            JsonMergeSettings s = new JsonMergeSettings();
+            s.MergeArrayHandling = MergeArrayHandling.Union;
+            JObject dataObject = JObject.FromObject(data);
+            jobject.Merge(dataObject,s);
+            return jobject.ToString();
+        }
+
+        public static string ClearJson(string json, string[] paths) {
+            JObject jobject= JObject.Parse(json);
+            foreach(string path in paths) {
+                JToken removeToken = jobject.SelectToken(path);
+                removeToken?.Parent.Remove();
+            }
+            return jobject.ToString();
+        }
     }
 }
