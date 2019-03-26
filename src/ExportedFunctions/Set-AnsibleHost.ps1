@@ -50,14 +50,13 @@ function Set-AnsibleHost {
         [Parameter(Position=1)]
         [String]$Name,
 
-        [Parameter(Position=3)]
-        [String]$Variables,
-
         [switch]$PassThru,
 
         $AnsibleTower = $Global:DefaultAnsibleTower
     )
     Process {
+        $PatchValues = @{}
+
         if($Id) {
             $ThisObject = Get-AnsibleHost -Id $Id -AnsibleTower $AnsibleTower
         } else {
@@ -67,27 +66,24 @@ function Set-AnsibleHost {
         }
 
         if($PSBoundParameters.ContainsKey('Description')) {
-            $ThisObject.description = $Description
+            $PatchValues["description"] = $Description
         }
 
         if($PSBoundParameters.ContainsKey('Enabled')) {
-            $ThisObject.enabled = $Enabled
+            $PatchValues["enabled"] = $Enabled
         }
 
         if($PSBoundParameters.ContainsKey('InstanceId')) {
-            $ThisObject.instance_id = $InstanceId
+            $PatchValues["instance_id"] = $InstanceId
         }
 
         if($PSBoundParameters.ContainsKey('Name')) {
-            $ThisObject.name = $Name
+            $PatchValues["name"] = $Name
         }
 
-        if($PSBoundParameters.ContainsKey('Variables')) {
-            $ThisObject.variables = $Variables
-        }
-
-        if($PSCmdlet.ShouldProcess($AnsibleTower, "Update hosts $($ThisObject.Id)")) {
-            $Result = Invoke-PutAnsibleInternalJsonResult -ItemType hosts -InputObject $ThisObject -AnsibleTower $AnsibleTower
+        if($PatchValues.Count -gt 0 -and $PSCmdlet.ShouldProcess($AnsibleTower, "Update hosts $($ThisObject.Id)")) {
+            $PatchJson = ConvertTo-Json $PatchValues
+            $Result = Invoke-AnsibleRequest -FullPath $ThisObject.Url -Method PATCH -Body $PatchJson -AnsibleTower $AnsibleTower
             if($Result) {
                 $JsonString = ConvertTo-Json -InputObject $Result
                 $AnsibleObject = [AnsibleTower.JsonFunctions]::ParseToHost($JsonString)
@@ -98,6 +94,9 @@ function Set-AnsibleHost {
                 if($AnsibleObject.Inventory) {
                     $AnsibleObject.Inventory = Get-AnsibleInventory -Id $AnsibleObject.Inventory -AnsibleTower $AnsibleTower -UseCache
                 }
+                $VariableData = Invoke-AnsibleRequest -Fullpath $AnsibleObject.Related["variable_data"] -AnsibleTower $AnsibleTower
+                $VariableJson = ConvertTo-Json $VariableData -Depth 32
+                $AnsibleObject.Variables = [Newtonsoft.Json.JsonConvert]::DeserializeObject($VariableJson, [hashtable], (New-Object AnsibleTower.HashtableConverter))
                 if($PassThru) {
                     $AnsibleObject
                 }
