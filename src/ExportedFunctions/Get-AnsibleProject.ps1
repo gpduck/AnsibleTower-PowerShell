@@ -235,28 +235,11 @@ function Get-AnsibleProject {
             if($UseCache -and $AnsibleObject) {
                 Write-Debug "[Get-AnsibleProject] Returning $($AnsibleObject.Url) from cache"
                 $AnsibleObject
-                return
             } else {
-                $Return = Invoke-GetAnsibleInternalJsonResult -ItemType "projects" -Id $Id -AnsibleTower $AnsibleTower
+                Invoke-GetAnsibleInternalJsonResult -ItemType "projects" -Id $Id -AnsibleTower $AnsibleTower | ResultToProject -AnsibleTower $AnsibleTower
             }
         } else {
-            $Return = Invoke-GetAnsibleInternalJsonResult -ItemType "projects" -Filter $Filter -AnsibleTower $AnsibleTower
-        }
-
-        if(!($Return)) {
-            return
-        }
-        foreach($ResultObject in $Return) {
-            $JsonString = $ResultObject | ConvertTo-Json
-            $AnsibleObject = [AnsibleTower.JsonFunctions]::ParseToproject($JsonString)
-            $CacheKey = "projects/$($AnsibleObject.Id)"
-            Write-Debug "[Get-AnsibleProject] Caching $($AnsibleObject.Url) as $CacheKey"
-            $AnsibleTower.Cache.Add($CacheKey, $AnsibleObject, $Script:CachePolicy) > $null
-            #Add to cache before filling in child objects to prevent recursive loop
-            $AnsibleObject.AnsibleTower = $AnsibleTower
-            Write-Debug "[Get-AnsibleProject] Returning $($AnsibleObject.Url)"
-            $AnsibleObject
-            $AnsibleObject = $Null
+            Invoke-GetAnsibleInternalJsonResult -ItemType "projects" -Filter $Filter -AnsibleTower $AnsibleTower | ResultToProject -AnsibleTower $AnsibleTower
         }
     }
 }

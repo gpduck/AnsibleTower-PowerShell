@@ -98,6 +98,8 @@ function Set-AnsibleProject {
         $AnsibleTower = $Global:DefaultAnsibleTower
     )
     Process {
+        $UpdateProps = @{}
+
         if($Id) {
             $ThisObject = Get-AnsibleProject -Id $Id -AnsibleTower $AnsibleTower
         } else {
@@ -121,23 +123,23 @@ function Set-AnsibleProject {
                     return
                 }
             }
-            $ThisObject.credential = $CredentialId
+            $UpdateProps["credential"] = $CredentialId
         }
 
         if($PSBoundParameters.ContainsKey('CustomVirtualenv')) {
-            $ThisObject.custom_virtualenv = $CustomVirtualenv
+            $UpdateProps["custom_virtualenv"] = $CustomVirtualenv
         }
 
         if($PSBoundParameters.ContainsKey('Description')) {
-            $ThisObject.description = $Description
+            $UpdateProps["description"] = $Description
         }
 
         if($PSBoundParameters.ContainsKey('LocalPath')) {
-            $ThisObject.local_path = $LocalPath
+            $UpdateProps["local_path"] = $LocalPath
         }
 
         if($PSBoundParameters.ContainsKey('Name')) {
-            $ThisObject.name = $Name
+            $UpdateProps["name"] = $Name
         }
 
         if($PSBoundParameters.ContainsKey('Organization')) {
@@ -156,50 +158,46 @@ function Set-AnsibleProject {
                     return
                 }
             }
-            $ThisObject.organization = $OrganizationId
+            $UpdateProps["organization"] = $OrganizationId
         }
 
         if($PSBoundParameters.ContainsKey('ScmBranch')) {
-            $ThisObject.scm_branch = $ScmBranch
+            $UpdateProps["scm_branch"] = $ScmBranch
         }
 
         if($PSBoundParameters.ContainsKey('ScmClean')) {
-            $ThisObject.scm_clean = $ScmClean
+            $UpdateProps["scm_clean"] = $ScmClean
         }
 
         if($PSBoundParameters.ContainsKey('ScmDeleteOnUpdate')) {
-            $ThisObject.scm_delete_on_update = $ScmDeleteOnUpdate
+            $UpdateProps["scm_delete_on_update"] = $ScmDeleteOnUpdate
         }
 
         if($PSBoundParameters.ContainsKey('ScmType')) {
-            $ThisObject.scm_type = $ScmType
+            $UpdateProps["scm_type"] = $ScmType
         }
 
         if($PSBoundParameters.ContainsKey('ScmUpdateCacheTimeout')) {
-            $ThisObject.scm_update_cache_timeout = $ScmUpdateCacheTimeout
+            $UpdateProps["scm_update_cache_timeout"] = $ScmUpdateCacheTimeout
         }
 
         if($PSBoundParameters.ContainsKey('ScmUpdateOnLaunch')) {
-            $ThisObject.scm_update_on_launch = $ScmUpdateOnLaunch
+            $UpdateProps["scm_update_on_launch"] = $ScmUpdateOnLaunch
         }
 
         if($PSBoundParameters.ContainsKey('ScmUrl')) {
-            $ThisObject.scm_url = $ScmUrl
+            $UpdateProps["scm_url"] = $ScmUrl
         }
 
         if($PSBoundParameters.ContainsKey('Timeout')) {
-            $ThisObject.timeout = $Timeout
+            $UpdateProps["timeout"] = $Timeout
         }
 
-        if($PSCmdlet.ShouldProcess($AnsibleTower, "Update projects $($ThisObject.Id)")) {
-            $Result = Invoke-PutAnsibleInternalJsonResult -ItemType projects -InputObject $ThisObject -AnsibleTower $AnsibleTower
-            if($Result) {
-                $JsonString = ConvertTo-Json -InputObject $Result
-                $AnsibleObject = [AnsibleTower.JsonFunctions]::ParseToProject($JsonString)
-                $AnsibleObject.AnsibleTower = $AnsibleTower
-                if($PassThru) {
-                    $AnsibleObject
-                }
+        if($updateProps.Count -gt 0 -and $PSCmdlet.ShouldProcess($AnsibleTower, "Update projects $($ThisObject.Id)")) {
+            $PatchJson = ConvertTo-Json $UpdateProps
+            $AnsibleObject = Invoke-AnsibleRequest -FullPath $ThisObject.url -Method PATCH -Body $PatchJson -AnsibleTower $AnsibleTower | ResultToProject -AnsibleTower $AnsibleTower
+            if($PassThru) {
+                $AnsibleObject
             }
         }
     }

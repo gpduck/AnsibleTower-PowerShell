@@ -26,6 +26,7 @@ namespace AnsibleTower
         public bool last_job_failed { get; set; }
         public bool has_schedules { get; set; }
         public object next_job_run { get; set; }
+        public object organization { get; set; }
         public string status { get; set; }
         public bool scm_delete_on_next_update { get; set; }
         public bool scm_update_on_launch { get; set; }
