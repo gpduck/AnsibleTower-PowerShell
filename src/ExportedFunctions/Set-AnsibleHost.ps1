@@ -55,7 +55,7 @@ function Set-AnsibleHost {
         $AnsibleTower = $Global:DefaultAnsibleTower
     )
     Process {
-        $PatchValues = @{}
+        $UpdateProps = @{}
 
         if($Id) {
             $ThisObject = Get-AnsibleHost -Id $Id -AnsibleTower $AnsibleTower
@@ -66,23 +66,23 @@ function Set-AnsibleHost {
         }
 
         if($PSBoundParameters.ContainsKey('Description')) {
-            $PatchValues["description"] = $Description
+            $UpdateProps["description"] = $Description
         }
 
         if($PSBoundParameters.ContainsKey('Enabled')) {
-            $PatchValues["enabled"] = $Enabled
+            $UpdateProps["enabled"] = $Enabled
         }
 
         if($PSBoundParameters.ContainsKey('InstanceId')) {
-            $PatchValues["instance_id"] = $InstanceId
+            $UpdateProps["instance_id"] = $InstanceId
         }
 
         if($PSBoundParameters.ContainsKey('Name')) {
-            $PatchValues["name"] = $Name
+            $UpdateProps["name"] = $Name
         }
 
-        if($PatchValues.Count -gt 0 -and $PSCmdlet.ShouldProcess($AnsibleTower, "Update hosts $($ThisObject.Id)")) {
-            $PatchJson = ConvertTo-Json $PatchValues
+        if($UpdateProps.Count -gt 0 -and $PSCmdlet.ShouldProcess($AnsibleTower, "Update hosts $($ThisObject.Id)")) {
+            $PatchJson = ConvertTo-Json $UpdateProps
             $Result = Invoke-AnsibleRequest -FullPath $ThisObject.Url -Method PATCH -Body $PatchJson -AnsibleTower $AnsibleTower
             if($Result) {
                 $JsonString = ConvertTo-Json -InputObject $Result
