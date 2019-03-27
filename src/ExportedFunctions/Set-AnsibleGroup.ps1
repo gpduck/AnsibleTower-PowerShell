@@ -1,49 +1,60 @@
+<#
+.DESCRIPTION
+Update the name or description of a group in Ansible Tower.
+
+.PARAMETER Id
+
+.PARAMETER Name
+
+.PARAMETER Description
+
+#>
 function Set-AnsibleGroup {
     [CmdletBinding(SupportsShouldProcess=$true)]
     [OutputType([AnsibleTower.Group])]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidGlobalVars", "Global:DefaultAnsibleTower")]
     param(
-        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
-        $Group,
+        [Parameter(Mandatory=$true,ValueFromPipelineByPropertyName=$true,ParameterSetName='ById')]
+        [Int32]$Id,
 
-        $Name,
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true,ParameterSetName='ByObject')]
+        [AnsibleTower.Group]$InputObject,
 
-        $Description,
+        [Parameter(Position=1)]
+        [String]$Name,
 
-        $Inventory,
+        [Parameter(Position=2)]
+        [String]$Description,
 
-        [switch]$Enabled,
+        [switch]$PassThru,
 
-        $Instance_id,
-
-        [Hashtable]$Variables,
-
-        [switch]$PassThru
+        $AnsibleTower = $Global:DefaultAnsibleTower
     )
     process {
-        $AnsibleTower = $Group.AnsibleTower
         $UpdateProps = @{}
+
+        if($Id) {
+            $ThisObject = Get-AnsibleGroup -Id $Id -AnsibleTower $AnsibleTower
+        } else {
+            $AnsibleTower = $InputObject.AnsibleTower
+            # Get a new instance to avoid modifing the passed in user object
+            $ThisObject = Get-AnsibleGroup -Id $InputObject.Id -AnsibleTower $AnsibleTower
+        }
+
         if($PSBoundParameters.ContainsKey("Name")) {
             $UpdateProps["name"] = $Name
         }
+
         if($PSBoundParameters.ContainsKey("Description")) {
             $UpdateProps["description"] = $Description
         }
-        if($PSBoundParameters.ContainsKey("Variables")) {
-            $UpdateProps["variables"] = ConvertTo-Json $Variables -Depth 12
-        }
 
-        $Body = ConvertTo-Json $UpdateProps
-
-        if($PSCmdlet.ShouldProcess($AnsibleTower.ToString(), "Update properties on group $($Group.Name)")) {
-            $Result = Invoke-AnsibleRequest -Method PATCH -FullPath $Group.Url -AnsibleTower $AnsibleTower -Body $Body
-            $JsonString = $Result | ConvertTo-Json
-            $Group = [AnsibleTower.JsonFunctions]::ParseToGroup($JsonString)
-            $Group.Variables = [AnsibleTower.JsonFunctions]::ParseToHashtable($Result.Variables)
-            $Group.AnsibleTower = $AnsibleTower
-        }
-
-        if($PassThru) {
-            Write-Output $Group
+        if($UpdateProps.Count -gt 0 -and $PSCmdlet.ShouldProcess($AnsibleTower, "Update properties on group $($ThisObject.Name)")) {
+            $PatchJson = ConvertTo-Json $UpdateProps
+            $AnsibleObject = Invoke-AnsibleRequest -FullPath $ThisObject.Url -Method PATCH -Body $PatchJson -AnsibleTower $AnsibleTower | ResultToGroup -AnsibleTower $AnsibleTower
+            if($PassThru) {
+                $AnsibleObject
+            }
         }
     }
 }
