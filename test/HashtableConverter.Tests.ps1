@@ -35,8 +35,8 @@ Describe "HashtableConverter" {
 
     context "Primitives" {
         BeforeEach {
-            $DTValue = [DateTime]::parse("2019-03-25T20:40:14.6814502-05:00")
-            $Json = ConvertTo-Json @{
+            $DTValue = [DateTime]::parse("2019-03-26 22:56:25Z")
+            $Json = [Newtonsoft.Json.JsonConvert]::SerializeObject(@{
                 "string" = "string value"
                 "int" = 5
                 "float" = 3.14
@@ -45,7 +45,7 @@ Describe "HashtableConverter" {
                 "datetime" = $DTValue
                 "int_list" = @(1,2,3)
                 "string_list" = @("one", "two", "three")
-            }
+            })
             $Ht = [Newtonsoft.Json.JsonConvert]::DeserializeObject($Json, [hashtable], $Converter)
         }
 
@@ -70,7 +70,8 @@ Describe "HashtableConverter" {
         }
 
         It "Parses a datetime property" {
-            TestValue -Value $Ht["datetime"] -ExpectedValue $DTValue -Expectedtype ([System.DateTime])
+            $Ht["datetime"].GetType() | Should -Be ([System.DateTime])
+            TestValue -Value $Ht["datetime"] -ExpectedValue $DTValue -ExpectedType ([System.Datetime])
         }
 
         It "Parses a list of ints" {
@@ -85,7 +86,7 @@ Describe "HashtableConverter" {
     context "Nested objects" {
         BeforeEach {
             $DTValue = [DateTime]::parse("2019-03-25T20:40:14.6814502-05:00")
-            $Json = ConvertTo-Json @{
+            $Json = [Newtonsoft.Json.JsonConvert]::SerializeObject(@{
                 "hashtable" = @{
                     "string" = "string value"
                     "int" = 5
@@ -96,7 +97,7 @@ Describe "HashtableConverter" {
                     "int_list" = @(1,2,3)
                     "string_list" = @("one", "two", "three")
                 }
-            }
+            })
             $Ht = [Newtonsoft.Json.JsonConvert]::DeserializeObject($Json, [hashtable], $Converter)
         }
 
