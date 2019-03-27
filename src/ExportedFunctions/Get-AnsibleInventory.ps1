@@ -179,45 +179,10 @@ function Get-AnsibleInventory {
                 Write-Debug "[Get-AnsibleInventory] Returning $($AnsibleObject.Url) from cache"
                 $AnsibleObject
             } else {
-                Invoke-GetAnsibleInternalJsonResult -ItemType "inventory" -Id $Id -AnsibleTower $AnsibleTower | ConvertToInventory -AnsibleTower $AnsibleTower
+                Invoke-GetAnsibleInternalJsonResult -ItemType "inventory" -Id $Id -AnsibleTower $AnsibleTower | ResultToInventory -AnsibleTower $AnsibleTower
             }
         } else {
-            Invoke-GetAnsibleInternalJsonResult -ItemType "inventory" -Filter $Filter -AnsibleTower $AnsibleTower | ConvertToInventory -AnsibleTower $AnsibleTower
+            Invoke-GetAnsibleInternalJsonResult -ItemType "inventory" -Filter $Filter -AnsibleTower $AnsibleTower | ResultToInventory -AnsibleTower $AnsibleTower
         }
-    }
-}
-
-function AddInventoryGroups {
-    param(
-        $Inventory
-    )
-    $Groups = Invoke-GetAnsibleInternalJsonResult -ItemType "inventory" -Id $Inventory.Id -ItemSubItem "groups" -AnsibleTower $Inventory.AnsibleTower
-    $Inventory.Groups = New-Object "System.Collections.Generic.List[AnsibleTower.Group]"
-    foreach($Group in $Groups) {
-        $GroupObj = Get-AnsibleGroup -Id $Group.Id -AnsibleTower $Inventory.AnsibleTower -UseCache
-        $Inventory.Groups.Add($GroupObj)
-    }
-    $Inventory
-}
-
-function ConvertToInventory {
-    param(
-        [Parameter(ValueFromPipeline=$true,Mandatory=$true)]
-        $InputObject,
-
-        [Parameter(Mandatory=$true)]
-        $AnsibleTower
-    )
-    process {
-        $JsonString = ConvertTo-Json $InputObject
-        $AnsibleObject = [AnsibleTower.JsonFunctions]::ParseToinventory($JsonString)
-        $AnsibleObject.AnsibleTower = $AnsibleTower
-        $CacheKey = "inventory/$($AnsibleObject.Id)"
-        Write-Debug "[Get-AnsibleInventory] Caching $($AnsibleObject.Url) as $CacheKey"
-        $AnsibleTower.Cache.Add($CacheKey, $AnsibleObject, $Script:CachePolicy) > $null
-        #Add to cache before filling in child objects to prevent recursive loop
-        $AnsibleObject = AddInventoryGroups $AnsibleObject
-        Write-Debug "[Get-AnsibleInventory] Returning $($AnsibleObject.Url)"
-        $AnsibleObject
     }
 }

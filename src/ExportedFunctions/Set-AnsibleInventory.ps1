@@ -69,6 +69,8 @@ function Set-AnsibleInventory {
         $AnsibleTower = $Global:DefaultAnsibleTower
     )
     Process {
+        $UpdateProps = @{}
+
         if($Id) {
             $ThisObject = Get-AnsibleInventory -Id $Id -AnsibleTower $AnsibleTower
         } else {
@@ -77,11 +79,11 @@ function Set-AnsibleInventory {
         }
 
         if($PSBoundParameters.ContainsKey('Description')) {
-            $ThisObject.description = $Description
+            $UpdateProps["description"] = $Description
         }
 
         if($PSBoundParameters.ContainsKey('HostFilter')) {
-            $ThisObject.host_filter = $HostFilter
+            $UpdateProps["host_filter"] = $HostFilter
         }
 
         if($PSBoundParameters.ContainsKey('InsightsCredential')) {
@@ -100,15 +102,15 @@ function Set-AnsibleInventory {
                     return
                 }
             }
-            $ThisObject.insights_credential = $InsightsCredentialId
+            $UpdateProps["insights_credential"] = $InsightsCredentialId
         }
 
         if($PSBoundParameters.ContainsKey('Kind')) {
-            $ThisObject.kind = $Kind
+            $UpdateProps["kind"] = $Kind
         }
 
         if($PSBoundParameters.ContainsKey('Name')) {
-            $ThisObject.name = $Name
+            $UpdateProps["name"] = $Name
         }
 
         if($PSBoundParameters.ContainsKey('Organization')) {
@@ -127,22 +129,18 @@ function Set-AnsibleInventory {
                     return
                 }
             }
-            $ThisObject.organization = $OrganizationId
+            $UpdateProps["organization"] = $OrganizationId
         }
 
         if($PSBoundParameters.ContainsKey('Variables')) {
-            $ThisObject.variables = $Variables
+            $UpdateProps["variables"] = $Variables
         }
 
-        if($PSCmdlet.ShouldProcess($AnsibleTower, "Update inventories $($ThisObject.Id)")) {
-            $Result = Invoke-PutAnsibleInternalJsonResult -ItemType inventory -InputObject $ThisObject -AnsibleTower $AnsibleTower
-            if($Result) {
-                $JsonString = ConvertTo-Json -InputObject $Result
-                $AnsibleObject = [AnsibleTower.JsonFunctions]::ParseToInventory($JsonString)
-                $AnsibleObject.AnsibleTower = $AnsibleTower
-                if($PassThru) {
-                    $AnsibleObject
-                }
+        if($UpdateProps.Count -gt 0 -and $PSCmdlet.ShouldProcess($AnsibleTower, "Update inventories $($ThisObject.Id)")) {
+            $PatchJson = ConvertTo-Json $UpdateProps
+            $AnsibleObject = Invoke-AnsibleRequest -FullPath $ThisObject.Url -Method PATCH -Body $PatchJson -AnsibleTower $AnsibleTower | ResultToInventory -AnsibleTower $AnsibleTower
+            if($PassThru) {
+                $AnsibleObject
             }
         }
     }

@@ -15,8 +15,10 @@ namespace AnsibleTower
         public DateTime modified { get; set; }
         public string name { get; set; }
         public string description { get; set; }
-        public int organization { get; set; }
-        public string variables { get; set; }
+        public object organization { get; set; }
+        [JsonIgnore]
+        public Hashtable variables { get; set; }
+        public IDictionary<string,string> related { get; set; }
         public bool has_active_failures { get; set; }
         public int? total_hosts { get; set; }
         public int? hosts_with_active_failures { get; set; }
