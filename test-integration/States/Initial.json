@@ -1,0 +1,247 @@
+[
+  {
+    "inputs": {
+      "username": "admin"
+    },
+    "description": "Credential Description",
+    "asset_type": "credential",
+    "credential_type": "Machine",
+    "asset_relation": {
+      "roles": [
+        {
+          "team": [],
+          "name": "Admin",
+          "user": [
+            "admin"
+          ]
+        },
+        {
+          "team": [],
+          "name": "Use",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Read",
+          "user": []
+        }
+      ]
+    },
+    "name": "Demo Credential"
+  },
+  {
+    "credential": "Demo Credential",
+    "name": "Demo Job Template",
+    "description": "Template Description",
+    "extra_vars": "---\nvariable: template",
+    "asset_relation": {
+      "extra_credentials": [],
+      "notification_templates_error": [],
+      "notification_templates_success": [],
+      "roles": [
+        {
+          "team": [],
+          "name": "Admin",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Execute",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Read",
+          "user": []
+        }
+      ],
+      "labels": [],
+      "schedules": [],
+      "survey_spec": {}
+    },
+    "project": "Demo Project",
+    "inventory": "Demo Inventory",
+    "asset_type": "job_template",
+    "playbook": "hello_world.yml"
+  },
+  {
+    "extra_vars": "---\nvariable: workflow",
+    "description": "Workflow Description",
+    "asset_relation": {
+      "labels": [],
+      "schedules": [],
+      "workflow_nodes": [],
+      "roles": [
+        {
+          "team": [],
+          "name": "Admin",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Execute",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Read",
+          "user": []
+        }
+      ],
+      "survey_spec": {}
+    },
+    "asset_type": "workflow",
+    "name": "Demo Workflow Template"
+  },
+  {
+    "description": "Project Description",
+    "scm_url": "https://github.com/ansible/ansible-tower-samples",
+    "asset_relation": {
+      "notification_templates_error": [],
+      "notification_templates_success": [],
+      "roles": [
+        {
+          "team": [],
+          "name": "Admin",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Use",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Update",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Read",
+          "user": []
+        }
+      ],
+      "schedules": []
+    },
+    "scm_type": "git",
+    "scm_update_on_launch": true,
+    "organization": "Default",
+    "asset_type": "project",
+    "name": "Demo Project"
+  },
+  {
+    "asset_relation": {
+      "roles": [
+        {
+          "team": [],
+          "name": "Admin",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Execute",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Project Admin",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Inventory Admin",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Credential Admin",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Workflow Admin",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Notification Admin",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Job Template Admin",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Auditor",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Member",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Read",
+          "user": []
+        }
+      ]
+    },
+    "asset_type": "organization",
+    "name": "Default"
+  },
+  {
+    "description": "Inventory Description",
+    "variables": "---\nvariable: inventory",
+    "asset_type": "inventory",
+    "organization": "Default",
+    "asset_relation": {
+      "inventory_source": [],
+      "host": [
+        {
+          "variables": "ansible_connection: local",
+          "name": "localhost",
+          "description": "Host Description"
+        }
+      ],
+      "group": [
+        {
+          "name": "Demo Group",
+          "description": "Group Description",
+          "hosts": [],
+          "sub_groups": []
+        }
+      ],
+      "roles": [
+        {
+          "team": [],
+          "name": "Admin",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Update",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Ad Hoc",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Use",
+          "user": []
+        },
+        {
+          "team": [],
+          "name": "Read",
+          "user": []
+        }
+      ]
+    },
+    "name": "Demo Inventory"
+  }
+]

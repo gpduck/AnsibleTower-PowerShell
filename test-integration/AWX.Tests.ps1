@@ -6,6 +6,8 @@ param(
     $Url
 )
 
+. "$PSScriptRoot/TestFunctions.ps1"
+
 function DockerComposeUp {
     param(
         $Path,
@@ -74,15 +76,18 @@ function IntegrationTest {
     Remove-Variable -Scope Global -Name DefaultAnsibleTower -ErrorAction SilentlyContinue
 
     Describe "AWX $TestName Integration"  {
+        Reload-AWX -Url $Url -Password $Password
+
         It "Connects" {
             { Connect-AnsibleTower -TowerUrl $Url -Credential $Credential } | Should -Not -Throw
         }
 
         context "Default connection" {
             $Connection = Connect-AnsibleTower -TowerUrl $Url -Credential $Credential
-            tower-cli config host $Url
-            tower-cli config oauth_token $Connection.Token.access_token
-            tower-cli config verify_ssl false
+
+            &"$PSScriptRoot/AWX.Group.ps1" -Url $Url -Password $Password
+            &"$PSScriptRoot/AWX.Host.ps1" -Url $Url -Password $Password
+            &"$PSScriptRoot/AWX.Project.ps1" -Url $Url -Password $Password
 
             It "Gets the demo inventory" {
                 $Inv = Get-AnsibleInventory -Name "Demo Inventory"
@@ -93,42 +98,6 @@ function IntegrationTest {
             It "Sets AnsibleTower on inventories" {
                 $Inv = Get-AnsibleInventory -Name "Demo Inventory"
                 $Inv.AnsibleTower | Should -Not -Be $Null
-            }
-
-            <#  NOT IMPLEMENTED
-            It "Gets the demo project" {
-                $Project = Get-AnsibleProject -Name "Demo Project"
-                $Project | Should -Not -Be $Null
-                $Project.Name | Should -Be "Demo Project"
-            }
-            #>
-
-            It "Gets localhost from the demo inventory" {
-                $H = Get-AnsibleHost -Name localhost -Inventory "Demo Inventory"
-                $H | Should -Not -Be $Null
-                $H.Name | Should -Be "localhost"
-            }
-
-            It "Parses the host inventory property correctly" {
-                $H = Get-AnsibleHost -Name localhost -Inventory "Demo Inventory"
-                $H.Inventory.Name | Should -Be "Demo Inventory"
-            }
-
-            It "Sets AnsibleTower on hosts" {
-                $H = Get-AnsibleHost -Name localhost -Inventory "Demo Inventory"
-                $H.AnsibleTower | Should -Not -Be $null
-            }
-
-            It "Set-AnsibleHost parses the host inventory property correctly" {
-                $H = Get-AnsibleHost -Name localhost -Inventory "Demo Inventory"
-                $SetHost = $H | Set-AnsibleHost -Description "PowerShell" -PassThru
-                $SetHost.Inventory.Name | SHould -Be "Demo Inventory"
-            }
-
-            It "Set-AnsibleHost updates a host" {
-                $H = Get-AnsibleHost -Name localhost -Inventory "Demo Inventory"
-                $SetHost = $H | Set-AnsibleHost -Description "Updated by PowerShell" -PassThru
-                $SetHost.Description | SHould -Be "Updated by PowerShell"
             }
 
             It "Gets the demo job template" {
@@ -155,15 +124,9 @@ function IntegrationTest {
             }
 
             It "Gets the demo credential" {
-                $Cred = Get-AnsibleCredential -Id 1
+                $Cred = Get-AnsibleCredential
                 $Cred | Should -Not -Be $Null
                 $Cred.Name | Should -Be "Demo Credential"
-            }
-
-            It "Gets the demo project" {
-                $Project = Get-AnsibleProject -Id 4
-                $Project | Should -Not -Be $Null
-                $Project.Name | Should -Be "Demo Project"
             }
 
             It "Updates the admin user" {
