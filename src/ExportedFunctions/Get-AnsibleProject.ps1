@@ -227,20 +227,9 @@ function Get-AnsibleProject {
         }
 
         if($id) {
-            $Return = Invoke-GetAnsibleInternalJsonResult -ItemType "projects" -Id $Id -AnsibleTower $AnsibleTower
+            Invoke-GetAnsibleInternalJsonResult -ItemType "projects" -Id $Id -AnsibleTower $AnsibleTower | ResultToProject -AnsibleTower $AnsibleTower
         } else {
-            $Return = Invoke-GetAnsibleInternalJsonResult -ItemType "projects" -Filter $Filter -AnsibleTower $AnsibleTower
-        }
-
-        if(!($Return)) {
-            return
-        }
-        foreach($ResultObject in $Return) {
-            $JsonString = $ResultObject | ConvertTo-Json
-            $AnsibleObject = [AnsibleTower.JsonFunctions]::ParseToproject($JsonString)
-            $AnsibleObject.AnsibleTower = $AnsibleTower
-            Write-Output $AnsibleObject
-            $AnsibleObject = $Null
+            Invoke-GetAnsibleInternalJsonResult -ItemType "projects" -Filter $Filter -AnsibleTower $AnsibleTower | ResultToProject -AnsibleTower $AnsibleTower
         }
     }
 }
