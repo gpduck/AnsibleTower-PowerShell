@@ -172,7 +172,9 @@ if($Url) {
     IntegrationTest -Password $Password -Url $Url
 } else {
     #Start all containers first
-    $TestList = Get-ChildItem -Directory | ForEach-Object {
+    $TestList = Get-ChildItem -Directory | Where-Object {
+        $_.Basename -ne "States"
+    } | ForEach-Object {
         $TestPath = $_.Fullname
         $ComposeFile = Join-Path $PSScriptRoot "docker-compose.yml"
         $ProjectName = [Guid]::NewGuid().Guid
