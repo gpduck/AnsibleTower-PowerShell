@@ -113,37 +113,10 @@ function Get-AnsibleGroup
                 Write-Debug "[Get-AnsibleGroup] Returning $($AnsibleObject.Url) from cache"
                 $AnsibleObject
             } else {
-                Invoke-GetAnsibleInternalJsonResult -ItemType "groups" -Id $id -AnsibleTower $AnsibleTower | ConvertToGroup -AnsibleTower $AnsibleTower
+                Invoke-GetAnsibleInternalJsonResult -ItemType "groups" -Id $id -AnsibleTower $AnsibleTower | ResultToGroup -AnsibleTower $AnsibleTower
             }
         } else {
-            Invoke-GetAnsibleInternalJsonResult -ItemType "groups" -AnsibleTower $AnsibleTower -Filter $Filter | ConvertToGroup -AnsibleTower $AnsibleTower
+            Invoke-GetAnsibleInternalJsonResult -ItemType "groups" -AnsibleTower $AnsibleTower -Filter $Filter | ResultToGroup -AnsibleTower $AnsibleTower
         }
-    }
-}
-
-function ConvertToGroup {
-    param(
-        [Parameter(ValueFromPipeline=$true,Mandatory=$true)]
-        $InputObject,
-
-        [Parameter(Mandatory=$true)]
-        $AnsibleTower
-    )
-    process {
-        $JsonString = ConvertTo-Json $InputObject
-        $AnsibleObject = [AnsibleTower.JsonFunctions]::ParseTogroup($JsonString)
-        $AnsibleObject.AnsibleTower = $AnsibleTower
-        $CacheKey = "groups/$($AnsibleObject.Id)"
-        Write-Debug "[Get-AnsibleGroup] Caching $($AnsibleObject.Url) as $CacheKey"
-        $AnsibleTower.Cache.Add($CacheKey, $AnsibleObject, $Script:CachePolicy) > $null
-        #Add to cache before filling in child objects to prevent recursive loop
-        if($AnsibleObject.Variables) {
-            $AnsibleObject.Variables = Get-ObjectVariableData $AnsibleObject
-        }
-        if($AnsibleObject.Inventory) {
-            $AnsibleObject.Inventory = Get-AnsibleInventory -Id $AnsibleObject.Inventory -AnsibleTower $AnsibleTower -UseCache
-        }
-        Write-Debug "[Get-AnsibleGroup] Returning $($AnsibleObject.Url)"
-        $AnsibleObject
     }
 }

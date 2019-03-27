@@ -16,9 +16,9 @@ namespace AnsibleTower
         public string name { get; set; }
         public string description { get; set; }
         public object inventory { get; set; }
-        //public string variables { get; set; }
         [JsonIgnore()]
         public Hashtable variables { get; set; }
+        public IDictionary<string,string> related { get; set; }
         public bool has_active_failures { get; set; }
         public int total_hosts { get; set; }
         public int hosts_with_active_failures { get; set; }
