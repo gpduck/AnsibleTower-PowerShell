@@ -265,7 +265,9 @@ function Connect-AnsibleTower
         [Parameter(Mandatory=$true)]
         [string]$TowerUrl,
 
-        [Switch]$DisableCertificateVerification
+        [Switch]$DisableCertificateVerification,
+
+        [Switch]$NotDefault
     )
 
     if ($DisableCertificateVerification)
@@ -321,18 +323,19 @@ function Connect-AnsibleTower
         $Endpoints | Get-Member -MemberType NoteProperty | ForEach-object {
             $Tower.Endpoints.Add($_.Name, $Endpoints."$($_.Name)")
         }
-        #TODO: if ! -notdefault
-        [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssigments', '')]
-        $Global:DefaultAnsibleTower = $Tower
+        if(!$NotDefault) {
+            [System.Diagnostics.CodeAnalysis.SuppressMessage('PSUseDeclaredVarsMoreThanAssigments', '')]
+            $Global:DefaultAnsibleTower = $Tower
+        }
     } catch {
         Write-Error -Message ("Could not authenticate: " + $_.Exception.Message) -Exception $_.Exception
     }
 
     # Connection and login success.
 
-    $script:AnsibleUrl = $TowerUrl;
-    $script:TowerApiUrl = $TowerApiUrl;
-    $script:AnsibleCredential = $Credential;
+    #$script:AnsibleUrl = $TowerUrl;
+    #$script:TowerApiUrl = $TowerApiUrl;
+    #$script:AnsibleCredential = $Credential;
 
     return $Tower;
 }
