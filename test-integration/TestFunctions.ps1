@@ -14,7 +14,7 @@ function Get-RandomString {
     [Guid]::NewGuid().ToString().Substring(0, 25)
 }
 
-function Get-AnsibleCredential {
+function Get-TestCredential {
     param(
         $Password
     )

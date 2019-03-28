@@ -15,12 +15,9 @@ if($PSBoundParameters.ContainsKey("AnsibleTower")) {
     $Tower["AnsibleTower"] = $AnsibleTower
 }
 
-$Credential = Get-AnsibleCredential -Password $Password
-
 Describe "Host Functions" {
     Context "Get-AnsibleHost" {
         Reload-AWX -Url $Url -Password $Password
-        Connect-AnsibleTower -TowerUrl $Url -Credential $Credential
         $Object = Get-AnsibleHost @Tower
 
         It "Gets the localhost" {
