@@ -49,6 +49,13 @@ Describe "Host Functions" {
         }
     }
 
+    Context "Random Group Test" {
+        it "Does a group work here?" {
+            $Group = Get-AnsibleGroup @Tower
+            $Group | Should -Not -Be $null
+        }
+    }
+
     Context "Set-AnsibleHost" {
         Reload-AWX -Url $Url -Password $Password
         BeforeEach {
