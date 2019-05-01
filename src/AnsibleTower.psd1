@@ -12,7 +12,7 @@
 RootModule = 'AnsibleTower.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.3'
+ModuleVersion = '1.0'
 
 # ID used to uniquely identify this module
 GUID = '68af0001-1f98-4449-ad65-5022d76b6477'
@@ -132,7 +132,7 @@ PrivateData = @{
         Prerelease = $null
 
         # Tags applied to this module. These help with module discovery in online galleries.
-        Tags = @("Ansible","Configuration","Management")
+        Tags = @("Ansible","Configuration","Management","PSEdition_Desktop","PSEdition_Core","Linux","Windows")
 
         # A URL to the license for this module.
         # LicenseUri = ''
