@@ -85,8 +85,9 @@ function IntegrationTest {
         context "Default connection" {
             $Connection = Connect-AnsibleTower -TowerUrl $Url -Credential $Credential
 
-            &"$PSScriptRoot/AWX.Host.ps1" -Url $Url -Password $Password
             &"$PSScriptRoot/AWX.Group.ps1" -Url $Url -Password $Password
+            &"$PSScriptRoot/AWX.Host.ps1" -Url $Url -Password $Password
+
             &"$PSScriptRoot/AWX.Project.ps1" -Url $Url -Password $Password
 
             It "Gets the demo inventory" {
